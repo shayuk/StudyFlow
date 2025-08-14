@@ -1,69 +1,74 @@
-# React + TypeScript + Vite
+# StudyFlow
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+StudyFlow is a comprehensive platform designed to streamline the educational process for both lecturers and students. It provides tools for assignment management, class analysis, and personalized learning, all powered by an intelligent bot.
 
-Currently, two official plugins are available:
+## Key Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **For Lecturers:**
+  - **Assignment Building:** Easily create and manage assignments.
+  - **Class Analysis:** Gain insights into class performance and student engagement.
+  - **Student Analysis:** Track individual student progress and identify areas for improvement.
+  - **Bot Settings:** Customize the behavior of the educational bot.
 
-## Expanding the ESLint configuration
+- **For Students:**
+  - **Interactive Learning:** Engage with course material through an intelligent bot.
+  - **Personalized Feedback:** Receive instant feedback on assignments and quizzes.
+  - **Progress Tracking:** Monitor learning progress and achievements.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Tech Stack
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **Frontend:** React, TypeScript, Vite
+- **Styling:** Tailwind CSS
+- **State Management:** Redux Toolkit
+- **Routing:** React Router
+- **UI Components:** Shadcn UI, FullCalendar
+- **Linting:** ESLint
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+## Project Structure
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```mermaid
+graph TD
+    A[src] --> B[main.tsx];
+    A --> C[App];
+    C --> D{Router};
+    D --> E[Lecturer Flow];
+    D --> F[Student Flow];
+
+    subgraph Core
+        G[components] -- Reusable UI --> C;
+        H[services] -- API Calls --> C;
+        I[store] -- State Management --> C;
+        J[hooks] -- Custom Logic --> C;
+        K[lib] -- Utilities --> C;
+    end
+
+    subgraph Features
+        L[features] --> E;
+        L --> F;
+    end
+
+    E --> M[Assignment Building];
+    E --> N[Class & Student Analysis];
+    E --> O[Bot Settings];
+
+    F --> P[Dashboard];
+    F --> Q[Assignments];
+    F --> R[Chat with Bot];
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Getting Started
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/your-username/studyflow.git
+    ```
+2.  **Install dependencies:**
+    ```bash
+    cd studyflow
+    npm install
+    ```
+3.  **Run the development server:**
+    ```bash
+    npm run dev
+    ```
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
