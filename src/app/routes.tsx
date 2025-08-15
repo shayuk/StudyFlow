@@ -1,8 +1,9 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout.tsx';
 import { StudentDashboard } from '../features/student/StudentDashboard.tsx';
+import { ProtectedRoute } from '../components/auth/ProtectedRoute.tsx';
 import { StudentReportPage } from '../features/student/StudentReportPage.tsx';
-import { LecturerDashboard } from '../features/lecturer/LecturerDashboard.tsx';
+import AnalyticsDashboard from '../features/lecturer/analytics/AnalyticsDashboard.tsx';
 import { LecturerManagementDashboard } from '../features/lecturer/LecturerManagementDashboard.tsx';
 import { LandingPage } from '../features/landing/LandingPage.tsx';
 
@@ -11,9 +12,6 @@ import CourseBuildingTab from '../features/lecturer/management/CourseBuildingTab
 import BotSettingsTab from '../features/lecturer/management/BotSettingsTab.tsx';
 import AssignmentBuildingTab from '../features/lecturer/management/AssignmentBuildingTab.tsx';
 
-// Analysis Tabs
-import StudentAnalysisTab from '../features/lecturer/analysis/StudentAnalysisTab.tsx';
-import ClassAnalysisTab from '../features/lecturer/analysis/ClassAnalysisTab.tsx';
 
 const NotFound = () => <div className="text-center">404 - Page Not Found</div>;
 
@@ -30,14 +28,15 @@ const router = createBrowserRouter([
     children: [
       {
         path: 'student',
-        element: <StudentDashboard />,
-      },
-      {
-        path: 'student/report',
-        element: <StudentReportPage />,
+        element: <ProtectedRoute allowedRoles={['student']} />,
+        children: [
+          { index: true, element: <StudentDashboard /> },
+          { path: 'report', element: <StudentReportPage /> },
+        ],
       },
       {
         path: 'lecturer',
+        element: <ProtectedRoute allowedRoles={['lecturer']} />,
         children: [
           {
             path: 'management',
@@ -50,11 +49,7 @@ const router = createBrowserRouter([
           },
           {
             path: 'analysis',
-            element: <LecturerDashboard />,
-            children: [
-              { index: true, element: <StudentAnalysisTab /> },
-              { path: 'class', element: <ClassAnalysisTab /> },
-            ],
+            element: <AnalyticsDashboard />,
           },
         ],
       },

@@ -20,7 +20,7 @@ const mockApiCall = () => {
 
 export const ProgressAnalytics: React.FC = () => {
   const [analyticsData, setAnalyticsData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+      const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,8 +30,10 @@ export const ProgressAnalytics: React.FC = () => {
       setLoading(false);
     };
 
-    fetchData();
+        fetchData();
   }, []);
+
+  
   return (
     <Card>
       <CardHeader>
@@ -48,10 +50,10 @@ export const ProgressAnalytics: React.FC = () => {
               <div className="flex items-center justify-center h-full text-text-secondary">טוען נתונים...</div>
             ) : (
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={analyticsData} layout="vertical" margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                            <BarChart data={analyticsData} layout="vertical" margin={{ top: 5, right: 30, left: 80, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                 <XAxis type="number" domain={[0, 100]} hide />
-                <YAxis dataKey="name" type="category" width={80} tickLine={false} axisLine={false} />
+                                                                <YAxis dataKey="name" type="category" width={180} tickLine={false} axisLine={false} />
                 <Tooltip
                   cursor={{ fill: 'rgba(238, 242, 255, 0.5)' }}
                   contentStyle={{ borderRadius: '0.5rem', border: '1px solid #e2e8f0', background: '#ffffff' }}

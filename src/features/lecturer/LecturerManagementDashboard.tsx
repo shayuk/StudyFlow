@@ -1,5 +1,3 @@
-
-
 import { NavLink, Outlet } from 'react-router-dom';
 
 const ManagementTab = ({ to, children }: { to: string; children: React.ReactNode }) => (
@@ -23,8 +21,8 @@ export const LecturerManagementDashboard = () => {
       <div className="border-b border-gray-200 mb-6">
         <nav className="-mb-px flex space-x-6 rtl:space-x-reverse">
           <ManagementTab to=".">בניית קורס</ManagementTab>
-          <ManagementTab to="bot-settings">הגדרות בוט סטודנטים</ManagementTab>
           <ManagementTab to="assignments">בניית מטלות</ManagementTab>
+          <ManagementTab to="bot-settings">הגדרות בוט סטודנטים</ManagementTab>
         </nav>
       </div>
       <main>

@@ -4,7 +4,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 
-const mockEvents = [
+const defaultMockEvents = [
   {
     title: 'שיעור: מבוא לסטטיסטיקה',
     start: new Date().toISOString().substring(0, 8) + '11T09:00:00',
@@ -28,7 +28,11 @@ const mockEvents = [
   },
 ];
 
-export const CourseCalendar: React.FC = () => {
+interface CourseCalendarProps {
+  events?: { title: string; start: Date | string; end: Date | string; [key: string]: any }[];
+}
+
+export const CourseCalendar: React.FC<CourseCalendarProps> = ({ events = defaultMockEvents }) => {
   return (
     <div className="bg-card p-4 rounded-lg shadow-md h-full text-text-primary">
       <FullCalendar
@@ -39,7 +43,7 @@ export const CourseCalendar: React.FC = () => {
           center: 'title',
           right: 'dayGridMonth,timeGridWeek,timeGridDay'
         }}
-        events={mockEvents}
+        events={events}
         locale="he"
         direction="rtl"
         height="600px"

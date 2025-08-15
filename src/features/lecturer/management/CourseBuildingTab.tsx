@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useUiStore } from '../../../store/ui.store.js';
 import { Button } from '../../../components/ui/Button.tsx';
 import { Input } from '../../../components/ui/Input.tsx';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/Card.tsx';
@@ -18,12 +19,17 @@ interface Exam {
 }
 
 const CourseBuildingTab: React.FC = () => {
+  const setCurrentContext = useUiStore((state) => state.setCurrentContext);
   const [courseName, setCourseName] = useState('');
   const [courseNumber, setCourseNumber] = useState('');
   const [courseStartDate, setCourseStartDate] = useState('');
   const [lessons, setLessons] = useState<Lesson[]>([{ id: 1, name: '', date: '', startTime: '', endTime: '' }]);
   const [exams, setExams] = useState<Exam[]>([{ id: 1, date: '' }]);
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    setCurrentContext('בניית קורס');
+  }, [setCurrentContext]);
 
   const addLesson = () => {
     setLessons([...lessons, { id: Date.now(), name: '', date: '', startTime: '', endTime: '' }]);

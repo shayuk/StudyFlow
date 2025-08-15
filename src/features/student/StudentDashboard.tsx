@@ -1,5 +1,7 @@
-import { CourseCard } from './CourseCard';
-import { JoinCourseForm } from './JoinCourseForm';
+import { useEffect } from 'react';
+import { useUiStore } from '../../store/ui.store.js';
+import { CourseCard } from './CourseCard.js';
+import { JoinCourseForm } from './JoinCourseForm.js';
 
 const mockCourses = [
   {
@@ -20,6 +22,12 @@ const mockCourses = [
 ];
 
 export const StudentDashboard = () => {
+  const setCurrentContext = useUiStore((state) => state.setCurrentContext);
+
+  useEffect(() => {
+    setCurrentContext('הקורסים שלי');
+  }, [setCurrentContext]);
+
   return (
     <div>
       <h1 className="text-3xl font-bold text-text-primary mb-6">הקורסים שלי</h1>
