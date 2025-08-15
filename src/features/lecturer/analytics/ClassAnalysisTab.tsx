@@ -1,6 +1,6 @@
 
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useUiStore, type UiState } from '../../../store/ui.store.js';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useAnalyticsStore } from '../../../store/analytics.store.js';
@@ -20,42 +20,43 @@ const ClassAnalysisTab = () => {
   const { addNotification, notifications } = useNotificationStore();
   const { user } = useAuthStore();
 
-  // Process data for Grades Distribution chart
-  const gradeRanges = [
-    { name: '0-59', range: [0, 59] },
-    { name: '60-69', range: [60, 69] },
-    { name: '70-79', range: [70, 79] },
-    { name: '80-89', range: [80, 89] },
-    { name: '90-100', range: [90, 100] },
-  ];
-
-  const gradesDistributionData = gradeRanges.map(r => {
-    const count = students.reduce((acc, student) => {
-      const gradesInBin = student.grades.filter(g => g.grade >= r.range[0] && g.grade <= r.range[1]).length;
-      return acc + gradesInBin;
-    }, 0);
-    return { name: r.name, 'מספר תלמידים': count };
-  });
-
-  // Process data for Completion Rate chart
-  const completedCount = students.filter(s => s.status === 'הושלם').length;
-  const inProgressCount = students.length - completedCount;
-  const completionData = [
-    { name: 'הושלם', value: completedCount },
-    { name: 'בתהליך', value: inProgressCount },
-  ];
-  const COLORS = ['#00C49F', '#FF8042'];
   const totalStudents = students.length;
-  const completionPercentage = totalStudents > 0 ? Math.round((completedCount / totalStudents) * 100) : 0;
 
-  // Process data for Difficulty Heatmap
-  const topicDifficulty = assignments.map(assignment => {
+  const gradesDistributionData = useMemo(() => {
+    const gradeRanges = [
+      { name: '0-59', range: [0, 59] },
+      { name: '60-69', range: [60, 69] },
+      { name: '70-79', range: [70, 79] },
+      { name: '80-89', range: [80, 89] },
+      { name: '90-100', range: [90, 100] },
+    ];
+    return gradeRanges.map(r => {
+      const count = students.reduce((acc, student) => {
+        const gradesInBin = student.grades.filter(g => g.grade >= r.range[0] && g.grade <= r.range[1]).length;
+        return acc + gradesInBin;
+      }, 0);
+      return { name: r.name, 'מספר תלמידים': count };
+    });
+  }, [students]);
+
+  const completedCount = useMemo(() => students.filter(s => s.status === 'הושלם').length, [students]);
+
+  const completionData = useMemo(() => [
+    { name: 'הושלם', value: completedCount },
+    { name: 'בתהליך', value: totalStudents - completedCount },
+  ], [completedCount, totalStudents]);
+
+  const COLORS = ['#00C49F', '#FF8042'];
+
+  const completionPercentage = useMemo(() => totalStudents > 0 ? Math.round((completedCount / totalStudents) * 100) : 0, [completedCount, totalStudents]);
+
+  const topicDifficulty = useMemo(() => assignments.map(assignment => {
     const relevantGrades = students.flatMap(s => s.grades.filter(g => g.assignmentId === assignment.id));
-    const averageGrade = relevantGrades.length > 0 
+    const averageGrade = relevantGrades.length > 0
       ? relevantGrades.reduce((sum, g) => sum + g.grade, 0) / relevantGrades.length
       : 0;
-    return { topic: assignment.topic, difficulty: 100 - averageGrade }; // Higher difficulty for lower grades
-  });
+    return { topic: assignment.topic, difficulty: 100 - averageGrade };
+  }), [assignments, students]);
 
   const getDifficultyColor = (difficulty: number) => {
     if (difficulty > 60) return 'bg-red-500';
@@ -63,12 +64,16 @@ const ClassAnalysisTab = () => {
     return 'bg-green-500';
   };
 
-  // Generate Alerts & Recommendations
-  const hardestTopic = topicDifficulty.reduce((max, item) => item.difficulty > max.difficulty ? item : max, topicDifficulty[0] || { topic: 'N/A', difficulty: 0 });
-  const lowPerformersCount = gradesDistributionData.find(bin => bin.name === '0-59')?.['מספר תלמידים'] || 0;
-  const lowPerformersPercentage = totalStudents > 0 ? Math.round((lowPerformersCount / totalStudents) * 100) : 0;
+  const hardestTopic = useMemo(() => {
+    if (topicDifficulty.length === 0) return { topic: 'N/A', difficulty: 0 };
+    return topicDifficulty.reduce((max, item) => item.difficulty > max.difficulty ? item : max, topicDifficulty[0]);
+  }, [topicDifficulty]);
 
-      useEffect(() => {
+  const lowPerformersCount = useMemo(() => gradesDistributionData.find(bin => bin.name === '0-59')?.['מספר תלמידים'] || 0, [gradesDistributionData]);
+
+  const lowPerformersPercentage = useMemo(() => totalStudents > 0 ? Math.round((lowPerformersCount / totalStudents) * 100) : 0, [lowPerformersCount, totalStudents]);
+
+  useEffect(() => {
     if (user?.role !== 'lecturer') return;
 
     const potentialAlerts = [
@@ -97,7 +102,7 @@ const ClassAnalysisTab = () => {
         }
       }
     });
-  }, [students, assignments, addNotification, notifications, hardestTopic, completionPercentage, lowPerformersCount, totalStudents]);
+  }, [addNotification, completionPercentage, hardestTopic, lowPerformersCount, notifications, students.length, totalStudents, user?.role]);
 
   const alerts = notifications.filter(n => n.type === 'warning' || n.type === 'danger' || n.type === 'info').slice(-3); // Show latest 3 relevant alerts
 

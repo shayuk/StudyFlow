@@ -1,13 +1,13 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { useUiStore, type UiState } from '../../../store/ui.store.js';
+import { useUiStore, type UiState } from '../../../store/ui.store.ts';
 import { useDropzone } from 'react-dropzone';
-import { useAssignmentStore, type Assignment } from '../../../store/assignment.store.js';
-import { Button } from '../../../components/ui/Button.js';
-import { Input } from '../../../components/ui/Input.js';
-import { Textarea } from '../../../components/ui/Textarea.js';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/Select.js';
+import { useAssignmentStore, type Assignment } from '../../../store/assignment.store.ts';
+import Button from '../../../components/ui/Button.tsx';
+import { Input } from '../../../components/ui/Input.tsx';
+import { Textarea } from '../../../components/ui/Textarea.tsx';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/Select.tsx';
 import { UploadCloud, X, Trash2, Copy, Edit } from 'lucide-react';
-import { CourseCalendar } from '../../student/CourseCalendar.js';
+import { CourseCalendar } from '../../student/CourseCalendar.tsx';
 
 const AssignmentBuildingTab = () => {
   const setCurrentContext = useUiStore((state: UiState) => state.setCurrentContext);

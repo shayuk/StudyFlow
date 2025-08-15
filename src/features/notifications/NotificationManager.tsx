@@ -3,7 +3,12 @@ import { useNotificationStore } from '../../store/notification.store.js';
 import { useAuthStore } from '../../store/auth.store.js';
 
 // Mock data fetching for student analytics
-const getStudentAnalytics = (): Promise<any[]> => {
+interface StudentAnalytics {
+  name: string;
+  'רמת שליטה': number;
+}
+
+const getStudentAnalytics = (): Promise<StudentAnalytics[]> => {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve([

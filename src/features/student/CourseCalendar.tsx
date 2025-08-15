@@ -29,7 +29,7 @@ const defaultMockEvents = [
 ];
 
 interface CourseCalendarProps {
-  events?: { title: string; start: Date | string; end: Date | string; [key: string]: any }[];
+  events?: { title: string; start: Date | string; end: Date | string; backgroundColor?: string; borderColor?: string; }[];
 }
 
 export const CourseCalendar: React.FC<CourseCalendarProps> = ({ events = defaultMockEvents }) => {
