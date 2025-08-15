@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '../../components/ui/Button.tsx';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card.tsx';
+import Button from '../../components/ui/Button.js';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card.js';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 
 
-const mockApiCall = () => {
+interface AnalyticsData {
+  name: string;
+  'רמת שליטה': number;
+  color: string;
+}
+
+const mockApiCall = (): Promise<AnalyticsData[]> => {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve([
@@ -19,16 +25,17 @@ const mockApiCall = () => {
 };
 
 export const ProgressAnalytics: React.FC = () => {
-  const [analyticsData, setAnalyticsData] = useState<any[]>([]);
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData[]>([]);
       const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       const data = await mockApiCall();
-      setAnalyticsData(data as any[]);
+      setAnalyticsData(data);
       setLoading(false);
     };
+
 
         fetchData();
   }, []);

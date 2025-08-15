@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Button } from '../../components/ui/Button.js';
-import { Card, CardContent, CardHeader } from '../../components/ui/Card.js';
+import Button from '../../components/ui/Button.tsx';
+import { Card, CardContent, CardHeader } from '../../components/ui/Card.tsx';
 import { MessageSquare, X, Send, Maximize, Minimize } from 'lucide-react';
-import { useUiStore } from '../../store/ui.store.js';
-import type { User } from '../../store/auth.store.js';
-import { useNotificationStore } from '../../store/notification.store.js';
+import { useUiStore } from '../../store/ui.store.ts';
+import type { User } from '../../store/auth.store.ts';
+import { useNotificationStore } from '../../store/notification.store.ts';
 
 interface ChatMessage {
   id: string;

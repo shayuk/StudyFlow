@@ -11,6 +11,9 @@ export interface KnowledgeBaseState {
   updateLink: (index: number, newLink: string) => void;
   setFiles: (files: File[]) => void;
   setPrompts: (prompts: string) => void;
+  isUpdating: boolean;
+  lastUpdated: Date | null;
+  updateKnowledgeBase: () => Promise<void>;
 }
 
 export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set) => ({
@@ -29,4 +32,12 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set) => ({
     })),
   setFiles: (files) => set({ files }),
   setPrompts: (prompts) => set({ prompts }),
+  isUpdating: false,
+  lastUpdated: null,
+  updateKnowledgeBase: async () => {
+    set({ isUpdating: true });
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    set({ isUpdating: false, lastUpdated: new Date() });
+  },
 }));

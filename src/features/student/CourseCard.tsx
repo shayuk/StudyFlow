@@ -1,6 +1,6 @@
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Progress } from '@/components/ui/Progress';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../../components/ui/Card.tsx';
+import Button from '../../components/ui/Button.tsx';
+import { Progress } from '../../components/ui/Progress.tsx';
 import { ArrowRight } from 'lucide-react';
 
 interface CourseCardProps {

@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bell, CheckCircle } from 'lucide-react';
-import { useNotificationStore } from '../../store/notification.store.js';
-import { Button } from '../../components/ui/Button.js';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card.js';
+import { useNotificationStore } from '../../store/notification.store.ts';
+import Button from '../../components/ui/Button.tsx';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card.tsx';
 
 export const NotificationBell: React.FC = () => {
   const { notifications, getUnread, markAsRead } = useNotificationStore();

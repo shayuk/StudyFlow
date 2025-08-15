@@ -1,8 +1,8 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Label } from '@/components/ui/Label';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card.tsx';
+import Button from '../../components/ui/Button.tsx';
+import { Input } from '../../components/ui/Input.tsx';
+import { Label } from '../../components/ui/Label.tsx';
 
 export const JoinCourseForm = () => {
   return (

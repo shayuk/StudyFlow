@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { getStudentsForLecturer } from '../../services/mock.service';
-import type { Student } from '../../services/mock.service';
+import { getStudentsForLecturer } from '../../services/mock.service.js';
+import type { Student } from '../../services/mock.service.js';
 
 const statusStyles = {
   'on-track': 'bg-success/20 text-success',

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useUiStore } from '../../../store/ui.store.js';
-import { Button } from '../../../components/ui/Button.tsx';
+import { useUiStore } from '../../../store/ui.store.ts';
+import Button from '../../../components/ui/Button.tsx';
 import { Input } from '../../../components/ui/Input.tsx';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/Card.tsx';
 import { PlusCircle, Trash2, Copy } from 'lucide-react';

@@ -1,9 +1,7 @@
-
-
 // Placeholder for the StudyFlow logo
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/Button';
+import { useAuth, type AuthState } from '../../hooks/useAuth.ts';
+import Button from '../../components/ui/Button.tsx';
 import { motion } from 'framer-motion';
 import { BrainCircuit, ArrowRight } from 'lucide-react';
 
@@ -16,7 +14,7 @@ const Logo = () => (
 
 export const LandingPage = () => {
   const navigate = useNavigate();
-  const loginByRole = useAuth((state) => state.loginByRole);
+  const loginByRole = useAuth((state: AuthState) => state.loginByRole);
 
   return (
     <div className="min-h-screen bg-background text-text-primary">

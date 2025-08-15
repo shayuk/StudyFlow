@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useUiStore, type UiState } from '../../../store/ui.store.js';
 import { useAnalyticsStore } from '../../../store/analytics.store.js';
