@@ -19,6 +19,16 @@ export default defineConfig({
     },
   },
 
+  // Workaround: prevent Vite from pre-bundling lucide-react (which may try to resolve missing re-exports)
+  optimizeDeps: {
+    exclude: ['lucide-react'],
+  },
+
+  // Ensure lucide-react is bundled on SSR to avoid external resolution issues in certain contexts
+  ssr: {
+    noExternal: ['lucide-react'],
+  },
+
   
 
   server: {
