@@ -1,0 +1,57 @@
+// Prisma schema for StudyFlow backend (Phase A — scaffolding)
+// Models will be added in later checklist steps to avoid premature coupling.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// -----------------------------
+// Phase A — Minimal Domain
+// -----------------------------
+
+model Org {
+  id        String   @id @default(cuid())
+  name      String
+  users     User[]
+  courses   Course[]
+  createdAt DateTime @default(now())
+}
+
+model User {
+  id        String   @id @default(cuid())
+  orgId     String
+  org       Org      @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  // Optional profile fields for future use
+  email     String?  @unique
+  name      String?
+  createdAt DateTime @default(now())
+  enrollments Enrollment[]
+}
+
+model Course {
+  id        String   @id @default(cuid())
+  orgId     String
+  org       Org      @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  name      String
+  code      String?  @unique
+  createdAt DateTime @default(now())
+  enrollments Enrollment[]
+}
+
+model Enrollment {
+  id        String     @id @default(cuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId  String
+  course    Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  // SQLite connector does not support enums; use string with app-level validation
+  role      String     @default("STUDENT")
+  createdAt DateTime   @default(now())
+
+  @@unique([userId, courseId])
+}

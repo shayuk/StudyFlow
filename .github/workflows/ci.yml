@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Ensure pnpm is on PATH regardless of Corepack state
+      - name: Setup pnpm (standalone)
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          standalone: true
+
+      # Enable Node with pnpm cache after pnpm exists
+      - name: Setup Node (with pnpm cache)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Verify pnpm
+        run: pnpm -v
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prepare server env
+        run: |
+          if [ ! -f server/.env ]; then cp server/.env.example server/.env; fi
+
+      - name: Generate Prisma client
+        run: pnpm run backend:prisma:generate
+
+      - name: Apply Prisma schema (db push)
+        run: pnpm -C server prisma:push
+
+      - name: Lint backend
+        run: pnpm run backend:lint
+
+      - name: Test backend with coverage
+        run: pnpm run backend:test:cov
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-coverage-html
+          path: server/coverage
+          if-no-files-found: warn

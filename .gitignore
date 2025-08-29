@@ -12,6 +12,13 @@ dist
 dist-ssr
 *.local
 
+# Backend local files
+server/.env
+server/prisma/dev.db
+server/prisma/*.db-journal
+server/logs/
+server/storage/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -25,3 +32,6 @@ dist-ssr
 
 *storybook.log
 storybook-static
+server/coverage/
+test-results/
+server/prisma/prisma/dev.db
