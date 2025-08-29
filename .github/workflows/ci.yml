@@ -33,6 +33,16 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Prepare server env
+        run: |
+          if [ ! -f server/.env ]; then cp server/.env.example server/.env; fi
+
+      - name: Generate Prisma client
+        run: pnpm run backend:prisma:generate
+
+      - name: Apply Prisma schema (db push)
+        run: pnpm -C server prisma:push
+
       - name: Lint backend
         run: pnpm run backend:lint
 
