@@ -37,10 +37,10 @@ const config: StorybookConfig = {
     // In SSR, ensure lucide-react is bundled (not externalized) to avoid missing icon files
     // See: https://vitejs.dev/guide/ssr.html#ssr-externals
     // Storybook runs Vite in a way where this may be relevant during Chromatic builds
-    // noExternal can be array or boolean; extend array form safely
-    const currentNoExternal = Array.isArray((config as any).ssr?.noExternal)
-      ? (config as any).ssr.noExternal
-      : ((config as any).ssr?.noExternal ? [(config as any).ssr.noExternal] : []);
+    // noExternal can be array or boolean; normalize it for safe extension
+    const ssrConfig = (config as any).ssr;
+    const noExternal = ssrConfig?.noExternal;
+    const currentNoExternal = Array.isArray(noExternal) ? noExternal : noExternal ? [noExternal] : [];
 
     (config as any).ssr = {
       ...((config as any).ssr || {}),
