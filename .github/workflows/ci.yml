@@ -13,17 +13,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Ensure pnpm is on PATH regardless of Corepack state
       - name: Setup pnpm (standalone)
         uses: pnpm/action-setup@v4
         with:
           version: 10
           standalone: true
 
+      # Enable Node with pnpm cache after pnpm exists
       - name: Setup Node (with pnpm cache)
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
+          cache: pnpm
 
       - name: Verify pnpm
         run: pnpm -v
@@ -38,8 +40,9 @@ jobs:
         run: pnpm run backend:test:cov
 
       - name: Upload coverage artifact
-        uses: actions/upload-artifact@v4
         if: always()
+        uses: actions/upload-artifact@v4
         with:
           name: server-coverage-html
           path: server/coverage
+          if-no-files-found: warn
