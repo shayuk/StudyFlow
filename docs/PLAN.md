@@ -74,7 +74,7 @@ Creating a **single clean web app** (no monorepo, no internal @studyflow package
 - [ ] Install dev deps: `pnpm add -D @types/node vite@latest typescript@latest`
 - [ ] Setup Tailwind: `pnpm add -D tailwindcss postcss autoprefixer` + config
 - [ ] Configure design tokens: primary blue #1e40af, accent orange #f97316, success green #22c55e, cloud gray #eef2f7
-- [ ] Setup Storybook: `npx storybook@latest init --type react-vite`
+-    *   Setup Storybook: `pnpm dlx storybook@latest init --type react-vite`
 - [ ] Setup Testing: `pnpm add -D vitest @testing-library/react @testing-library/jest-dom @testing-library/user-event`
 - [ ] Setup i18n: `pnpm add i18next react-i18next` + he/en namespaces + RTL handling
 

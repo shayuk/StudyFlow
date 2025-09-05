@@ -24,6 +24,16 @@ StudyFlow is a comprehensive platform designed to streamline the educational pro
 - **UI Components:** Shadcn UI, FullCalendar
 - **Linting:** ESLint
 
+## Conventions
+
+- **Package manager:** PNPM only
+- **Commands:**
+  - Install: `pnpm install`
+  - Dev (frontend): `pnpm dev`
+  - Backend build: `pnpm -C server build`
+  - Backend tests: `pnpm backend:test`
+- **Do not use** `npm` or `yarn` in this repo (avoid creating `package-lock.json` / `yarn.lock`).
+
 ## Project Structure
 
 ```mermaid
@@ -65,10 +75,10 @@ graph TD
 2.  **Install dependencies:**
     ```bash
     cd studyflow
-    npm install
+    pnpm install
     ```
 3.  **Run the development server:**
     ```bash
-    npm run dev
+    pnpm dev
     ```
 
