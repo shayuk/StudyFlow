@@ -55,3 +55,218 @@ model Enrollment {
 
   @@unique([userId, courseId])
 }
+
+// ---------------------------------
+// Bots, Chat, Progress, Notifications, Calendar
+// ---------------------------------
+// NOTE: SQLite connector does not support Prisma enums/Json/primitive lists.
+// Use String fields with app-level validation. Store JSON as text.
+
+model Bot {
+  id         String        @id @default(cuid())
+  orgId      String
+  name       String
+  persona    String?       // Galibot/Leobot/description
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  versions   BotVersion[]
+  instances  BotInstance[]
+
+  @@index([orgId])
+}
+
+model BotVersion {
+  id          String            @id @default(cuid())
+  botId       String
+  status      String            @default("draft") // allowed: draft|prepared|published|retired
+  prompts     String?           // JSON string: { system, developer, style }
+  tools       String?           // JSON string array: ["rag.search","planner.suggest",...]
+  temperature Float?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  bot         Bot               @relation(fields: [botId], references: [id])
+  assets      BotKnowledgeAsset[]
+  instances   BotInstance[]
+
+  @@index([botId])
+}
+
+model BotKnowledgeAsset {
+  id         String     @id @default(cuid())
+  versionId  String
+  kind       String     // "file"|"link"|"prompt"
+  uri        String?    // path/url
+  content    String?    // prompt text
+  meta       String?    // JSON string
+  createdAt  DateTime   @default(now())
+  version    BotVersion @relation(fields: [versionId], references: [id])
+
+  @@index([versionId])
+}
+
+model BotInstance {
+  id         String     @id @default(cuid())
+  botId      String
+  versionId  String
+  courseId   String
+  taUserId   String?    // optional TA scoping
+  status     String     @default("active")
+  createdAt  DateTime   @default(now())
+  bot        Bot        @relation(fields: [botId], references: [id])
+  version    BotVersion @relation(fields: [versionId], references: [id])
+
+  @@unique([courseId, botId])
+  @@index([courseId])
+}
+
+model Conversation {
+  id            String   @id @default(cuid())
+  orgId         String
+  botInstanceId String
+  userId        String
+  role          String   // allowed: student|instructor|admin
+  pageId        String?
+  courseId      String?
+  createdAt     DateTime @default(now())
+  messages      Message[]
+
+  @@index([orgId])
+  @@index([orgId, userId])
+}
+
+model Message {
+  id             String        @id @default(cuid())
+  conversationId String
+  sender         String        // "user"|"bot"|"tool"
+  content        String
+  citations      String?       // JSON string
+  tokens         Int?
+  createdAt      DateTime      @default(now())
+  conversation   Conversation  @relation(fields: [conversationId], references: [id])
+
+  @@index([conversationId, createdAt])
+}
+
+model MasterySnapshot { // student progress heatmap
+  id        String   @id @default(cuid())
+  orgId     String
+  userId    String
+  courseId  String
+  topic     String
+  score     Int      // 0–100
+  color     String   // "green"|"yellow"|"red"
+  updatedAt DateTime @default(now())
+
+  @@index([orgId, userId, courseId, topic], name: "ms_user_course_topic")
+}
+
+model Notification {
+  id           String               @id @default(cuid())
+  orgId        String
+  userId       String
+  role         String               // allowed: student|instructor|admin
+  kind         String               // allowed: deadline|overdue|risk|reminder|plan
+  severity     String               // allowed: info|warn|critical
+  title        String
+  body         String
+  courseId     String?
+  assignmentId String?
+  topic        String?
+  isRead       Boolean              @default(false)
+  createdAt    DateTime             @default(now())
+
+  @@index([orgId, userId, isRead, createdAt])
+}
+
+model CalendarAccount {
+  id                String   @id @default(cuid())
+  orgId             String
+  userId            String
+  provider          String   // "google"|"microsoft"
+  email             String
+  primaryCalendarId String?
+  scopes            String?  // JSON string array
+  status            String   @default("connected")
+  tz                String?
+  connectedAt       DateTime @default(now())
+}
+
+model CalendarSyncState {
+  id              String   @id @default(cuid())
+  orgId           String
+  userId          String
+  provider        String
+  calendarId      String
+  syncToken       String?
+  lastFullSyncAt  DateTime?
+  watchChannelId  String?
+  watchResourceId String?
+  watchExpiresAt  DateTime?
+
+  @@index([orgId, userId, provider])
+}
+
+model CalendarEventCache {
+  id         String   @id @default(cuid())
+  orgId      String
+  userId     String
+  provider   String
+  calendarId String
+  externalId String
+  status     String
+  isAllDay   Boolean  @default(false)
+  start      DateTime
+  end        DateTime
+  busyOnly   Boolean  @default(true)
+  updatedAt  DateTime @default(now())
+
+  @@index([orgId, userId, start])
+}
+
+// ---------------------------------
+// Knowledge Intake (Upload → Parse → Chunk)
+// ---------------------------------
+
+model KnowledgeSource {
+  id        String   @id @default(cuid())
+  orgId     String
+  name      String
+  meta      String?  // JSON string for arbitrary metadata
+  createdAt DateTime @default(now())
+  documents KnowledgeDocument[]
+
+  @@index([orgId])
+}
+
+model KnowledgeDocument {
+  id        String   @id @default(cuid())
+  orgId     String
+  sourceId  String
+  source    KnowledgeSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  filename  String
+  mime      String
+  size      Int
+  path      String   // storage relative path
+  status    String   @default("uploaded") // uploaded|processing|ready|failed
+  error     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  chunks    KnowledgeChunk[]
+
+  @@index([orgId])
+  @@index([sourceId])
+}
+
+model KnowledgeChunk {
+  id        String   @id @default(cuid())
+  orgId     String
+  docId     String
+  document  KnowledgeDocument @relation(fields: [docId], references: [id], onDelete: Cascade)
+  idx       Int
+  content   String
+  meta      String?  // JSON string (page numbers, offsets, lang)
+  createdAt DateTime @default(now())
+
+  @@index([orgId])
+  @@index([docId, idx])
+}

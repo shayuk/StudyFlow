@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import jwt, { type Secret, type SignOptions } from 'jsonwebtoken';
 
 export type Role = 'student' | 'instructor' | 'admin';
 
@@ -15,9 +15,10 @@ function getJwtSecret(): string {
   return secret;
 }
 
-export function signToken(payload: JwtUser, expiresIn: string = '7d'): string {
-  const secret = getJwtSecret();
-  return jwt.sign(payload, secret, { algorithm: 'HS256', expiresIn });
+export function signToken(payload: JwtUser, expiresInSeconds: number = 7 * 24 * 60 * 60): string {
+  const secret: Secret = getJwtSecret();
+  const opts: SignOptions = { expiresIn: expiresInSeconds };
+  return jwt.sign(payload, secret, opts);
 }
 
 export function verifyToken(token: string): JwtUser {
