@@ -2,9 +2,11 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
+    setupFiles: ['./vitest.setup.ts'],
     include: ['test/**/*.spec.ts'],
     environment: 'node',
     globals: true,
+    clearMocks: true,
     // SQLite likes single-threaded to avoid file locks
     poolOptions: { threads: { singleThread: true } },
     coverage: {

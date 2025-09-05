@@ -28,7 +28,7 @@ const instrA = () => token({ sub: 'u_instr_1', orgId: 'org_demo_1', roles: ['ins
 const studentA = () => token({ sub: 'u_stud_1', orgId: 'org_demo_1', roles: ['student'] });
 const adminB = () => token({ sub: 'u_admin_2', orgId: 'org_demo_2', roles: ['admin'] });
 
-describe('Courses routes (CRUD + auth)', () => {
+describe.sequential('Courses routes (CRUD + auth)', () => {
   const app = buildTestApp();
 
   beforeAll(async () => {
@@ -37,10 +37,11 @@ describe('Courses routes (CRUD + auth)', () => {
   });
 
   beforeEach(async () => {
-    // Clean tables between tests
-    await prisma.enrollment.deleteMany();
-    await prisma.course.deleteMany();
-    await prisma.org.deleteMany();
+    // Clean only data for this suite's orgs to avoid interfering with other specs
+    const ORGS = ['org_demo_1', 'org_demo_2'];
+    await prisma.enrollment.deleteMany({ where: { course: { orgId: { in: ORGS } } } });
+    await prisma.course.deleteMany({ where: { orgId: { in: ORGS } } });
+    await prisma.org.deleteMany({ where: { id: { in: ORGS } } });
   });
 
   afterAll(async () => {

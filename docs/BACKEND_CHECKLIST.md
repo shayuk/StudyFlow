@@ -35,20 +35,20 @@ Use this checklist to progress step-by-step. Check items only when fully done an
 - [ ] Tests for version state machine and deploy constraints.
 
 ## 5) Knowledge Intake (Upload → Parse → Chunk)
-- [ ] Storage folder `storage/` for uploads.
-- [ ] POST `/api/knowledge/sources` (create source).
-- [ ] POST `/api/knowledge/documents` (multipart upload).
-- [ ] Parse PDFs to text (hebrew/RTL aware), normalize, metadata.
-- [ ] Chunking strategy: 700–1200 chars, 100–150 overlap.
-- [ ] Persist chunks; embeddings deferred until Qdrant.
-- [ ] Job queue (in-memory) for parse/chunk pipeline.
-- [ ] Tests: sample PDF parse and chunk counts.
+- [x] Storage folder `storage/` for uploads.
+- [x] POST `/api/knowledge/sources` (create source).
+- [x] POST `/api/knowledge/documents` (multipart upload).
+- [x] Parse PDFs to text (hebrew/RTL aware), normalize, metadata.
+- [x] Chunking strategy: 700–1200 chars, 100–150 overlap.
+- [x] Persist chunks; embeddings deferred until Qdrant.
+- [x] Job queue (in-memory) for parse/chunk pipeline.
+- [x] Tests: sample PDF parse and chunk counts.
 
 ## 6) Chat (SSE) — Stub First
-- [ ] POST `/api/chat/start` — create conversation.
-- [ ] POST `/api/chat/:conversationId/message` — stream SSE with mock tokens.
-- [ ] Persist messages (user/assistant/tool) in DB.
-- [ ] Unit tests for SSE flow and storage.
+- [x] POST `/api/chat/start` — create conversation.
+- [x] POST `/api/chat/:conversationId/message` — stream SSE with mock tokens.
+- [x] Persist messages (user/assistant/tool) in DB.
+- [x] Unit tests for SSE flow and storage.
 
 ## 7) Planner (Local)
 - [ ] Model: plans, planSessions.
