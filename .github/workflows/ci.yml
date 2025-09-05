@@ -46,11 +46,11 @@ jobs:
       - name: Lint backend
         run: pnpm run backend:lint
 
-      - name: Test backend with coverage
-        run: pnpm run backend:test:cov
+      - name: Test backend 
+        run: pnpm run backend:test
 
       - name: Upload coverage artifact
-        if: always()
+        if: always() && hashFiles('server/coverage/**') != ''
         uses: actions/upload-artifact@v4
         with:
           name: server-coverage-html
