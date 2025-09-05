@@ -27,12 +27,13 @@ Use this checklist to progress step-by-step. Check items only when fully done an
 - [x] Unit tests for model constraints and authorization.
 
 ## 4) Bots Core
-- [ ] Models: bot, botVersion, botInstance.
-- [ ] POST `/api/bots` — create bot.
-- [ ] POST `/api/bots/:botId/versions` — create version (model, prompts, tools).
-- [ ] POST `/api/bots/:botId/deploy` — create instance (courseId, TA, AB group).
-- [ ] GET `/api/bot-instances?courseId=...` — list/deployments.
-- [ ] Tests for version state machine and deploy constraints.
+- [x] Models: bot, botVersion, botInstance.
+- [x] POST `/api/bots` — create bot.
+- [x] POST `/api/bots/:botId/versions` — create version (prompts, tools, temperature).
+- [x] PATCH `/api/bot-versions/:versionId` — forward-only lifecycle transitions (draft → prepared → published).
+- [x] POST `/api/bots/:botId/deploy` — create instance (courseId; select latest published version by default).
+- [x] GET `/api/bot-instances?courseId=...` — list/deployments (scoped by org).
+- [x] Tests cover core routes and constraints (see `server/test/bots.routes.spec.ts`).
 
 ## 5) Knowledge Intake (Upload → Parse → Chunk)
 - [x] Storage folder `storage/` for uploads.
@@ -57,11 +58,13 @@ Use this checklist to progress step-by-step. Check items only when fully done an
 - [ ] Tests for back‑planning and daily caps.
 
 ## 8) RAG Enablement (Qdrant local)
-- [ ] Docker command documented in README to start Qdrant.
-- [ ] Embedding function (pluggable; local stub or open-source model).
-- [ ] Index chunks into Qdrant with metadata (orgId, courseId, docId).
-- [ ] GET `/api/knowledge/search` — hybrid baseline (BM25 local + vector).
-- [ ] Tests with tiny corpus.
+- [x] Docker command documented in README to start Qdrant. (See `docs/BACKEND_README.md` → Local Development)
+- [x] Embedding function (local stub) — `server/src/services/embeddings.ts`.
+- [x] Index chunks into Qdrant with metadata (orgId, courseId, docId) — `processDocument()` in `server/src/services/knowledge.ts`.
+- [x] GET `/api/knowledge/search` — hybrid baseline (vector via Qdrant if enabled; fallback LIKE) — `server/src/routes/knowledge.ts`.
+- [x] Tests with tiny corpus — `server/test/knowledge.search.spec.ts` (uses fallback LIKE; Qdrant disabled for test).
+
+Note: Qdrant usage is gated by env. In local/test it may be disabled with `QDRANT_DISABLED=true`; when not disabled, vector search runs and falls back safely on errors.
 
 ## 9) Analytics (Basics)
 - [ ] Aggregations for course/bot/TA from conversations/events.
@@ -84,12 +87,12 @@ Use this checklist to progress step-by-step. Check items only when fully done an
 - [x] `pnpm run backend:dev` — start server with nodemon/ts-node.
 - [x] `pnpm run backend:test` — Vitest.
 - [x] `pnpm run backend:seed` — seed demo org/users/courses.
-- [ ] `pnpm run backend:lint` — ESLint.
+- [x] `pnpm run backend:lint` — ESLint (clean; warnings only from generated `server/coverage/`).
 
 ## Done Criteria for Phase A (Local MVP)
 - [ ] All routes above functional locally and tested.
 - [ ] Planner produces sessions; chat streams SSE mock.
-- [ ] Knowledge pipeline parses and chunks documents.
+- [x] Knowledge pipeline parses and chunks documents.
 - [ ] No changes made to frontend without approval.
 
 ---
@@ -99,4 +102,4 @@ Status is tracked in this file and via tasks. Commit frequently and keep changes
 ---
 
 ## Next Step (planned)
-- Proceed with Section 3: Domain (Phase A — Minimal) — Prisma models and minimal course CRUD with org scoping.
+- Proceed with Section 7: Planner (Local) — models (`Plan`, `PlanSession`), POST `/api/planner/plan`, conflict detection, and tests for back‑planning and daily caps.
