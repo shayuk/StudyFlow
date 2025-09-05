@@ -52,10 +52,10 @@ Use this checklist to progress step-by-step. Check items only when fully done an
 - [x] Unit tests for SSE flow and storage.
 
 ## 7) Planner (Local)
-- [ ] Model: plans, planSessions.
-- [ ] POST `/api/planner/plan` — produce sessions from constraints.
-- [ ] Conflict detection against stored sessions.
-- [ ] Tests for back‑planning and daily caps.
+- [x] Model: plans, planSessions.
+- [x] POST `/api/planner/plan` — produce sessions from constraints.
+- [x] Conflict detection against stored sessions.
+- [x] Tests for back‑planning and daily caps.
 
 ## 8) RAG Enablement (Qdrant local)
 - [x] Docker command documented in README to start Qdrant. (See `docs/BACKEND_README.md` → Local Development)

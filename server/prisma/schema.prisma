@@ -19,6 +19,7 @@ model Org {
   name      String
   users     User[]
   courses   Course[]
+  plans     Plan[]
   createdAt DateTime @default(now())
 }
 
@@ -31,6 +32,7 @@ model User {
   name      String?
   createdAt DateTime @default(now())
   enrollments Enrollment[]
+  plans       Plan[]
 }
 
 model Course {
@@ -41,6 +43,7 @@ model Course {
   code      String?  @unique
   createdAt DateTime @default(now())
   enrollments Enrollment[]
+  plans       Plan[]
 }
 
 model Enrollment {
@@ -269,4 +272,44 @@ model KnowledgeChunk {
 
   @@index([orgId])
   @@index([docId, idx])
+}
+
+// ---------------------------------
+// Planner (Plans & Sessions)
+// ---------------------------------
+
+model Plan {
+  id        String   @id @default(cuid())
+  orgId     String
+  org       Org      @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId  String?
+  course    Course?  @relation(fields: [courseId], references: [id])
+  title     String?
+  // Constraints as JSON string (daily caps, session length, prefer hours, deadline, etc.)
+  constraints String?
+  fromDate  DateTime
+  toDate    DateTime
+  createdAt DateTime @default(now())
+  sessions  PlanSession[]
+
+  @@index([orgId])
+  @@index([orgId, userId])
+  @@index([courseId])
+}
+
+model PlanSession {
+  id        String   @id @default(cuid())
+  planId    String
+  plan      Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  start     DateTime
+  end       DateTime
+  topic     String?
+  description String?
+  status    String   @default("scheduled") // allowed: scheduled|done|canceled
+  createdAt DateTime @default(now())
+
+  @@index([planId])
+  @@index([start])
 }

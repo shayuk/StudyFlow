@@ -107,8 +107,8 @@ docker run -p 6333:6333 -v %cd%/qdrant_storage:/qdrant/storage qdrant/qdrant:lat
 ---
 
 ## Status
-- Current: Backend scaffold running locally under `server/`; AuthN/Z (Local JWT) implemented with middleware, helpers, and demo seed tokens. `GET /health` OK. ESLint is clean across backend sources; tightened types and minor safety fixes in `server/src/routes/chat.ts`, `server/src/routes/bots.ts`, and services (`knowledge`, `llm`).
-- Next Step: Domain (Phase A — Minimal) — Prisma models (org, user, course, enrollment) and minimal course CRUD with org scoping; open a PR to run CI on these changes and track the domain work.
+- Current: Backend scaffold under `server/` with AuthN/Z (Local JWT). Core domains (orgs/users/courses) and Bots routes are implemented and tested. Knowledge intake (upload → parse → chunk) and RAG search (Qdrant gated) are implemented and tested. Chat SSE stub works with citations. Planner is implemented and tested: `POST /api/planner/plan` generates sessions with conflict detection and persists `Plan` + `PlanSession`.
+- Next Step: Analytics (Basics) — aggregates for course/bot/TA and a minimal `GET /api/analytics/course/:courseId` with tests.
 
 ---
 
