@@ -46,6 +46,43 @@ jobs:
       - name: Lint backend
         run: pnpm run backend:lint
 
+      - name: Test backend (no coverage)
+        run: pnpm run backend:test
+
+  coverage:
+    name: Coverage (non-blocking)
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm (standalone)
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          standalone: true
+
+      - name: Setup Node (with pnpm cache)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prepare server env
+        run: |
+          if [ ! -f server/.env ]; then cp server/.env.example server/.env; fi
+
+      - name: Generate Prisma client
+        run: pnpm run backend:prisma:generate
+
+      - name: Apply Prisma schema (db push)
+        run: pnpm -C server prisma:push
+
       - name: Test backend with coverage
         run: pnpm run backend:test:cov
 
