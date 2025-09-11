@@ -67,9 +67,9 @@ Use this checklist to progress step-by-step. Check items only when fully done an
 Note: Qdrant usage is gated by env. In local/test it may be disabled with `QDRANT_DISABLED=true`; when not disabled, vector search runs and falls back safely on errors.
 
 ## 9) Analytics (Basics)
-- [ ] Aggregations for course/bot/TA from conversations/events.
-- [ ] GET `/api/analytics/course/:courseId`.
-- [ ] Tests on seeded data.
+- [x] Basic aggregates for course from conversations/messages (counts + lastActivity).
+- [x] GET `/api/analytics/course/:courseId`.
+- [x] Tests on seeded data.
 
 ## 10) Calendar (ReadOnly — Optional after Core)
 - [ ] Provider interface and Google/Microsoft stub adapters (local only).
@@ -88,6 +88,10 @@ Note: Qdrant usage is gated by env. In local/test it may be disabled with `QDRAN
 - [x] `pnpm run backend:test` — Vitest.
 - [x] `pnpm run backend:seed` — seed demo org/users/courses.
 - [x] `pnpm run backend:lint` — ESLint (clean; warnings only from generated `server/coverage/`).
+ - [x] E2E Smoke workflow configured in `.github/workflows/e2e.yml` (gated by `STAGING_BASE_URL`).
+ - [ ] Document where to set `STAGING_BASE_URL` (repo secrets) and how to run locally with `BASE_URL`.
+ - [ ] Local E2E run: `set BASE_URL=http://localhost:5173 && pnpm run e2e:smoke` (CMD).
+ - [ ] Upload Playwright report as artifact in E2E workflow (optional).
 
 ## Done Criteria for Phase A (Local MVP)
 - [ ] All routes above functional locally and tested.

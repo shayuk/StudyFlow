@@ -8,6 +8,7 @@ import chatRouter from './routes/chat';
 import progressRouter from './routes/progress';
 import knowledgeRouter from './routes/knowledge';
 import plannerRouter from './routes/planner';
+import analyticsRouter from './routes/analytics';
 
 const app = express();
 
@@ -48,6 +49,7 @@ app.use('/api', chatRouter);
 app.use('/api', progressRouter);
 app.use('/api', knowledgeRouter);
 app.use('/api', plannerRouter);
+app.use('/api', analyticsRouter);
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 4000;
 
