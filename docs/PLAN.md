@@ -172,6 +172,12 @@ After each step, remove:
 - After completing Analytics (Basics), review again and raise by an additional +5% if stable.
 - When coverage stabilizes, switch the non-blocking coverage job in CI to blocking and enforce thresholds in Vitest.
 
+## Stash reminders (local edits)
+- After merging the CI/docs coverage PRs, restore local edits that were stashed:
+  - Run: `git stash list` then `git stash pop`.
+  - Files expected: `server/package.json`, `server/src/routes/chat.ts`, `server/src/services/qdrant.ts`.
+  - Review changes and open a dedicated PR for these backend edits.
+
 ## Final Deliverables
 - [ ] Running dev server on :3000 with described UI + chat widget
 - [ ] `docs/PLAN.md` checked with all steps + "Verification ✅" notes
