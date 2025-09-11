@@ -112,6 +112,17 @@ docker run -p 6333:6333 -v %cd%/qdrant_storage:/qdrant/storage qdrant/qdrant:lat
 
 ---
 
+## Coverage Policy (Staged)
+
+- CI runs tests without coverage in the main job to keep pipelines green and fast.
+- A separate, non-blocking job publishes coverage artifacts for visibility.
+- We will gradually enforce coverage by raising thresholds as features stabilize:
+  - Milestone reminders: after each major backend feature (Planner, Analytics, etc.), review coverage and consider +5% threshold.
+  - When coverage is stable, make the coverage job blocking and set explicit thresholds in Vitest config.
+- Scope: measure only `server/src/**` (exclude specs, generated code, and external adapters) when thresholds are introduced.
+
+---
+
 ## Staging Deployment & Runbook (CMD only)
 
 This project is local-first, but when a staging environment is needed for the pilot, follow this minimal, reproducible process.

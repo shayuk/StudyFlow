@@ -167,6 +167,11 @@ After each step, remove:
 - [ ] Scaffold stories from init (after Step 5)
 - [ ] Any leftover demo/test files not needed (after Step 8)
 
+## Coverage reminders (backend)
+- After completing Planner (Phase A), review coverage report artifact and consider raising thresholds by +5%.
+- After completing Analytics (Basics), review again and raise by an additional +5% if stable.
+- When coverage stabilizes, switch the non-blocking coverage job in CI to blocking and enforce thresholds in Vitest.
+
 ## Final Deliverables
 - [ ] Running dev server on :3000 with described UI + chat widget
 - [ ] `docs/PLAN.md` checked with all steps + "Verification ✅" notes
