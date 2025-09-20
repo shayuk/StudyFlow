@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { authMiddleware, AuthedRequest } from '../auth/middleware';
 import { requireOrg, requireAnyRole } from '../auth/authorize';
 import { prisma } from '../db';
+import { z } from 'zod';
 
 const router = Router();
 
@@ -19,14 +20,15 @@ router.get('/courses', authMiddleware, requireOrg(), async (req: AuthedRequest, 
 // Create a course within the caller's org (allowed: instructor, admin)
 router.post('/courses', authMiddleware, requireOrg(), requireAnyRole(['instructor', 'admin']), async (req: AuthedRequest, res: Response) => {
   const orgId = req.user!.orgId;
-  const { name, code } = req.body ?? {};
-
-  if (!name || typeof name !== 'string') {
-    return res.status(400).json({ error: 'name is required (string)' });
+  const schema = z.object({
+    name: z.string().min(1, 'name is required (string)'),
+    code: z.string().optional(),
+  });
+  const parsed = schema.safeParse(req.body ?? {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.issues[0]?.message ?? 'invalid body' });
   }
-  if (code && typeof code !== 'string') {
-    return res.status(400).json({ error: 'code must be string if provided' });
-  }
+  const { name, code } = parsed.data;
 
   try {
     // Ensure the org exists (seedless DX). If not, create a placeholder name.
@@ -48,14 +50,15 @@ router.post('/courses', authMiddleware, requireOrg(), requireAnyRole(['instructo
 router.patch('/courses/:courseId', authMiddleware, requireOrg(), requireAnyRole(['instructor', 'admin']), async (req: AuthedRequest, res: Response) => {
   const orgId = req.user!.orgId;
   const { courseId } = req.params as { courseId: string };
-  const { name, code } = req.body ?? {};
-
-  if (name !== undefined && typeof name !== 'string') {
-    return res.status(400).json({ error: 'name must be string if provided' });
+  const schema = z.object({
+    name: z.string().optional(),
+    code: z.string().optional(),
+  });
+  const parsed = schema.safeParse(req.body ?? {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.issues[0]?.message ?? 'invalid body' });
   }
-  if (code !== undefined && typeof code !== 'string') {
-    return res.status(400).json({ error: 'code must be string if provided' });
-  }
+  const { name, code } = parsed.data;
 
   const existing = await prisma.course.findUnique({ where: { id: courseId } });
   if (!existing) {
