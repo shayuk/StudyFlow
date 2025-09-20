@@ -23,6 +23,32 @@ This document defines the backend vision, scope, and local-first plan for StudyF
 - Logging: JSON structured logs to console and local file `logs/app.log`.
 - Tests: Vitest for unit/integration. No external mocks for dev; test doubles only for tests.
 
+### בדיקת קובץ לוגים (CMD)
+
+להלן פקודות קצרות לבדיקת קובץ הלוגים ב־Windows CMD:
+
+```cmd
+if exist logs\app.log (echo קיים) else (echo לא קיים)
+type logs\app.log
+```
+
+## Swagger UI (CMD)
+
+Swagger UI נטען מ־`docs/api/openapi.json` אשר מסונכרן מתוך `docs/api/openapi.yaml`.
+
+בדיקות מהירות:
+
+```cmd
+REM פתיחת מסך הדוקס (רענון קשיח)
+REM כתובת: http://localhost:4000/docs  (Ctrl+F5)
+```
+
+סנכרון JSON מתוך YAML:
+
+```cmd
+pnpm -C server run docs:sync-openapi
+```
+
 ## Security & Roles (local)
 - Roles: `student`, `instructor`, `admin`.
 - JWT contains: `sub`, `orgId`, `roles[]`, optional `courseId`.

@@ -82,3 +82,16 @@ graph TD
     pnpm dev
     ```
 
+## Log file location
+
+השרת כותב לוגים בפורמט JSON הן למסך והן לקובץ.
+
+- מיקום קובץ הלוגים: `logs/app.log` (בתיקיית השורש של הריפו).
+
+בדיקות מהירות (CMD):
+
+```cmd
+if exist logs\app.log (echo קיים) else (echo לא קיים)
+type logs\app.log
+```
+
