@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import express, { Request, Response } from 'express';
+import path from 'node:path';
 import { httpLogger, logger } from './logger';
+import { rateLimitLocal } from './middleware/rateLimit';
 import meRouter from './routes/me';
 import coursesRouter from './routes/courses';
 import botsRouter from './routes/bots';
@@ -9,11 +11,16 @@ import progressRouter from './routes/progress';
 import knowledgeRouter from './routes/knowledge';
 import plannerRouter from './routes/planner';
 import analyticsRouter from './routes/analytics';
+import { errorHandler } from './middleware/error';
 
 const app = express();
 
 app.use(express.json());
 app.use(httpLogger);
+app.use(rateLimitLocal);
+
+// Serve API docs (Swagger UI) from docs/api at /docs
+app.use('/docs', express.static(path.resolve(__dirname, '../../docs/api')));
 
 // Boot-time config checks (non-fatal in dev, fatal in prod)
 const IS_PROD = process.env.NODE_ENV === 'production';
@@ -51,10 +58,13 @@ app.use('/api', knowledgeRouter);
 app.use('/api', plannerRouter);
 app.use('/api', analyticsRouter);
 
+// Centralized error handler must be last
+app.use(errorHandler);
+
 const PORT = process.env.PORT ? Number(process.env.PORT) : 4000;
 
 app.listen(PORT, () => {
-  logger.info({ port: PORT }, 'Backend server started');
+  logger.info({ port: PORT, docs: `http://localhost:${PORT}/docs` }, 'Backend server started');
 });
 
 // Export the app for integration testing (Supertest)

@@ -1,0 +1,35 @@
+name: OpenAPI Lint & Bundle
+
+on:
+  pull_request:
+    paths:
+      - 'docs/api/**'
+  push:
+    branches: [ main ]
+    paths:
+      - 'docs/api/**'
+
+jobs:
+  lint-and-bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Lint OpenAPI (YAML)
+        run: npx -y @redocly/cli@latest lint docs/api/openapi.yaml --format=stylish
+
+      - name: Bundle to JSON
+        run: npx -y @redocly/cli@latest bundle docs/api/openapi.yaml -o docs/api/openapi.json --ext json
+
+      - name: Upload bundled JSON artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: openapi-json
+          path: docs/api/openapi.json
+          if-no-files-found: error
