@@ -87,7 +87,7 @@ router.post(
       (req.header('accept')?.includes('text/event-stream') ?? false) || (req.query?.stream === '1');
 
     const role = req.user!.roles[0] ?? 'student';
-    const context = { pageId: convo.pageId, courseId: convo.courseId };
+    const context = { pageId: convo.pageId ?? undefined, courseId: convo.courseId ?? undefined };
 
     if (wantsStream) {
       // Prepare SSE
