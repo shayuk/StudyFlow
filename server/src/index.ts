@@ -1,4 +1,5 @@
 import 'dotenv/config';
+console.log(">>> NODE_ENV =", process.env.NODE_ENV);
 import express, { Request, Response } from 'express';
 import path from 'node:path';
 import { httpLogger, logger } from './logger';

@@ -78,53 +78,75 @@ export async function callLecturerModel(params: { text: string; context?: LlmCon
     return callStudentModel({ text, context: params.context });
   }
   const allowGlide = force !== 'anthropic';
-  try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY as string,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model,
-        max_tokens: 1024,
-        stream: true,
-        messages: [
-          { role: 'user', content: text },
-        ],
-      }),
-    });
-    if (!resp.ok || !resp.body) {
-      const bodyText = await safeReadText(resp);
-      logger.warn({ provider: 'openai_glide', status: resp.status, statusText: resp.statusText, model, body: bodyText }, 'Gliding to OpenAI from Anthropic failure');
+  // Simple retry/backoff (3 attempts: 0ms, 300ms, 600ms) before gliding
+  const attempts = 3;
+  const baseDelayMs = 300;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY as string,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model,
+          max_tokens: 1024,
+          stream: true,
+          messages: [
+            { role: 'user', content: text },
+          ],
+        }),
+      });
+      if (!resp.ok || !resp.body) {
+        // Retry only on transient errors (429 / 5xx). Otherwise break to glide/fallback.
+        const transient = resp.status === 429 || (resp.status >= 500 && resp.status <= 599);
+        if (transient && i < attempts - 1) {
+          await new Promise((r) => setTimeout(r, baseDelayMs * i));
+          continue;
+        }
+        const bodyText = await safeReadText(resp);
+        logger.warn({ provider: 'openai_glide', status: resp.status, statusText: resp.statusText, model, body: bodyText }, 'Gliding to OpenAI from Anthropic failure');
+        if (allowGlide && hasOpenAI) {
+          try { return await callStudentModel({ text, context: params.context }); }
+          catch (e) { logger.warn({ provider: 'openai_glide', error: String(e), model }, 'OpenAI glide failed'); }
+        }
+        return stringToStream(`(LLM error fallback) ${text}`);
+      }
+      const reader = (resp.body as ReadableStream<Uint8Array>).getReader();
+      const decoder = new TextDecoder();
+      logger.info({ provider: 'anthropic', model }, 'Lecturer stream: Anthropic OK');
+      async function* stream() {
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          yield chunk;
+        }
+      }
+      return stream();
+    } catch (err: unknown) {
+      // Retry on network exceptions too
+      const detail = err instanceof Error ? err.message : String(err);
+      const lastAttempt = i >= attempts - 1;
+      if (!lastAttempt) {
+        await new Promise((r) => setTimeout(r, baseDelayMs * (i + 1)));
+        continue;
+      }
+      logger.warn({ provider: 'openai_glide', error: detail, model }, 'Gliding to OpenAI from Anthropic exception');
       if (allowGlide && hasOpenAI) {
         try { return await callStudentModel({ text, context: params.context }); }
-        catch (e) {
-          logger.warn({ provider: 'openai_glide', error: String(e), model }, 'OpenAI glide failed');
-        }
+        catch (e) { logger.warn({ provider: 'openai_glide', error: String(e), model }, 'OpenAI glide failed'); }
       }
       return stringToStream(`(LLM error fallback) ${text}`);
     }
-    const reader = (resp.body as ReadableStream<Uint8Array>).getReader();
-    const decoder = new TextDecoder();
-    logger.info({ provider: 'anthropic', model }, 'Lecturer stream: Anthropic OK');
-    async function* stream() {
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-        yield chunk;
-      }
-    }
-    return stream();
-  } catch (err: unknown) {
-    const detail = err instanceof Error ? err.message : String(err);
-    logger.warn({ provider: 'openai_glide', error: detail, model }, 'Gliding to OpenAI from Anthropic exception');
-    if (allowGlide && hasOpenAI) {
-      try { return await callStudentModel({ text, context: params.context }); }
-      catch (e) { logger.warn({ provider: 'openai_glide', error: String(e), model }, 'OpenAI glide failed'); }
-    }
-    return stringToStream(`(LLM error fallback) ${text}`);
   }
+  // Should not reach here, but in case no return happened inside attempts
+  logger.warn({ provider: 'openai_glide', model }, 'Gliding to OpenAI after exhausting Anthropic retries');
+  if (allowGlide && hasOpenAI) {
+    try { return await callStudentModel({ text, context: params.context }); }
+    catch (e) { logger.warn({ provider: 'openai_glide', error: String(e), model }, 'OpenAI glide failed'); }
+  }
+  return stringToStream(`(LLM error fallback) ${text}`);
 }
