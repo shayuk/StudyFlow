@@ -17,7 +17,7 @@ jobs:
       - name: Setup pnpm (standalone)
         uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: 10.17.1
           standalone: true
 
       # Enable Node with pnpm cache after pnpm exists
@@ -37,21 +37,25 @@ jobs:
         run: |
           if [ ! -f server/.env ]; then cp server/.env.example server/.env; fi
 
-      # ⬇️ שינוי מינימלי: מריצים ישירות מתוך server/
+      # ⬇️ מריצים ישירות מתוך server/
       - name: Generate Prisma client
-        run: pnpm --dir server prisma generate
+        working-directory: server
+        run: pnpm prisma generate
 
-      # ⬇️ שינוי מינימלי: החלפה ל --dir
+      # ⬇️ הרצת db push מתוך server/
       - name: Apply Prisma schema (db push)
-        run: pnpm --dir server prisma db push
+        working-directory: server
+        run: pnpm prisma db push
 
-      # ⬇️ שינוי מינימלי: הרצת לינט מתוך server/
+      # ⬇️ הרצת לינט/בילד מתוך server/
       - name: Lint backend
-        run: pnpm --dir server lint
+        working-directory: server
+        run: pnpm lint
 
-      # ⬇️ שינוי מינימלי: הרצת טסטים מתוך server/
+      # ⬇️ הרצת טסטים מתוך server/
       - name: Test backend (no coverage)
-        run: pnpm --dir server test
+        working-directory: server
+        run: pnpm test
 
   coverage:
     name: Coverage (non-blocking)
@@ -65,7 +69,7 @@ jobs:
       - name: Setup pnpm (standalone)
         uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: 10.17.1
           standalone: true
 
       - name: Setup Node (with pnpm cache)
@@ -81,17 +85,20 @@ jobs:
         run: |
           if [ ! -f server/.env ]; then cp server/.env.example server/.env; fi
 
-      # ⬇️ שינוי מינימלי: מריצים ישירות מתוך server/
+      # ⬇️ מריצים ישירות מתוך server/
       - name: Generate Prisma client
-        run: pnpm --dir server prisma generate
+        working-directory: server
+        run: pnpm prisma generate
 
-      # ⬇️ שינוי מינימלי: החלפה ל --dir
+      # ⬇️ הרצת db push מתוך server/
       - name: Apply Prisma schema (db push)
-        run: pnpm --dir server prisma db push
+        working-directory: server
+        run: pnpm prisma db push
 
-      # ⬇️ שינוי מינימלי: טסטים עם כיסוי מתוך server/
+      # ⬇️ טסטים עם כיסוי מתוך server/
       - name: Test backend with coverage
-        run: pnpm --dir server test:cov
+        working-directory: server
+        run: pnpm test:cov
 
       - name: Upload coverage artifact
         if: always() && hashFiles('server/coverage/**') != ''
