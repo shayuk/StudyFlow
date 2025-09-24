@@ -47,10 +47,10 @@ jobs:
         working-directory: server
         run: pnpm prisma db push
 
-      # ⬇️ הרצת לינט/בילד מתוך server/
-      - name: Lint backend
+      # ⬇️ Build backend from server/
+      - name: Build backend
         working-directory: server
-        run: pnpm lint
+        run: pnpm build
 
       # ⬇️ הרצת טסטים מתוך server/
       - name: Test backend (no coverage)
