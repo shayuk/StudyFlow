@@ -37,17 +37,21 @@ jobs:
         run: |
           if [ ! -f server/.env ]; then cp server/.env.example server/.env; fi
 
+      # ⬇️ שינוי מינימלי: מריצים ישירות מתוך server/
       - name: Generate Prisma client
-        run: pnpm run backend:prisma:generate
+        run: pnpm --dir server prisma generate
 
+      # ⬇️ שינוי מינימלי: החלפה ל --dir
       - name: Apply Prisma schema (db push)
-        run: pnpm -C server prisma:push
+        run: pnpm --dir server prisma db push
 
+      # ⬇️ שינוי מינימלי: הרצת לינט מתוך server/
       - name: Lint backend
-        run: pnpm run backend:lint
+        run: pnpm --dir server lint
 
+      # ⬇️ שינוי מינימלי: הרצת טסטים מתוך server/
       - name: Test backend (no coverage)
-        run: pnpm run backend:test
+        run: pnpm --dir server test
 
   coverage:
     name: Coverage (non-blocking)
@@ -77,14 +81,17 @@ jobs:
         run: |
           if [ ! -f server/.env ]; then cp server/.env.example server/.env; fi
 
+      # ⬇️ שינוי מינימלי: מריצים ישירות מתוך server/
       - name: Generate Prisma client
-        run: pnpm run backend:prisma:generate
+        run: pnpm --dir server prisma generate
 
+      # ⬇️ שינוי מינימלי: החלפה ל --dir
       - name: Apply Prisma schema (db push)
-        run: pnpm -C server prisma:push
+        run: pnpm --dir server prisma db push
 
+      # ⬇️ שינוי מינימלי: טסטים עם כיסוי מתוך server/
       - name: Test backend with coverage
-        run: pnpm run backend:test:cov
+        run: pnpm --dir server test:cov
 
       - name: Upload coverage artifact
         if: always() && hashFiles('server/coverage/**') != ''
