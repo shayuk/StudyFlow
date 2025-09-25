@@ -11,29 +11,38 @@ jobs:
     # Use env value for gating since some runners restrict 'secrets' in expressions here
     env:
       BASE_URL: ${{ secrets.STAGING_BASE_URL }}
-    if: ${{ secrets.STAGING_BASE_URL != '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Skip notice if BASE_URL is empty
+        if: ${{ env.BASE_URL == '' }}
+        run: |
+        echo "Skipping E2E: BASE_URL is empty; set STAGING_BASE_URL secret to enable."
+
       - name: Setup Node
+        if: ${{ env.BASE_URL != '' }}
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'pnpm'
 
       - name: Setup pnpm
+        if: ${{ env.BASE_URL != '' }}
         uses: pnpm/action-setup@v4
         with:
           version: 9
 
       - name: Install dependencies
+        if: ${{ env.BASE_URL != '' }}
         run: pnpm install --frozen-lockfile
 
       - name: Install Playwright browsers
+        if: ${{ env.BASE_URL != '' }}
         run: pnpm exec playwright install --with-deps
 
       - name: Run E2E smoke
+        if: ${{ env.BASE_URL != '' }}
         run: pnpm run e2e:smoke
 
       - name: Upload Playwright report
