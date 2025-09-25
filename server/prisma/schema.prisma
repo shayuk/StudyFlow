@@ -44,6 +44,7 @@ model Course {
   createdAt DateTime @default(now())
   enrollments Enrollment[]
   plans       Plan[]
+  events      CalendarEvent[]
 }
 
 model Enrollment {
