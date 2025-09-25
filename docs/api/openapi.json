@@ -37,6 +37,9 @@
     },
     {
       "name": "Analytics"
+    },
+    {
+      "name": "Calendar"
     }
   ],
   "paths": {
@@ -238,20 +241,11 @@
           "400": {
             "$ref": "#/components/responses/ValidationError"
           },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
           "403": {
             "description": "Forbidden"
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "description": "Conflict"
-          },
-          "429": {
-            "$ref": "#/components/responses/TooManyRequests"
           }
         }
       },
@@ -290,6 +284,82 @@
           },
           "409": {
             "description": "Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          }
+        }
+      }
+    },
+    "/api/calendar/freebusy": {
+      "get": {
+        "summary": "Get demo free/busy windows (cached, no OAuth)",
+        "description": "Local-only demo endpoint that returns busy windows for the current user in the given range. Intended for planner integration. Real providers will be added later.",
+        "tags": [
+          "Calendar"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "start": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "end": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequests"
