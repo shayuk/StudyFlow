@@ -8,7 +8,7 @@ on:
 jobs:
   e2e-smoke:
     runs-on: ubuntu-latest
-    # Use env value for gating since some runners restrict 'secrets' in expressions here
+    # BASE_URL מגיע מ-Secret של הריפו; כאשר הוא ריק נדלג על השלבים בפועל
     env:
       BASE_URL: ${{ secrets.STAGING_BASE_URL }}
     steps:
@@ -18,7 +18,7 @@ jobs:
       - name: Skip notice if BASE_URL is empty
         if: ${{ env.BASE_URL == '' }}
         run: |
-        echo "Skipping E2E: BASE_URL is empty; set STAGING_BASE_URL secret to enable."
+          echo "Skipping E2E: BASE_URL is empty; set STAGING_BASE_URL secret to enable."
 
       - name: Setup Node
         if: ${{ env.BASE_URL != '' }}
