@@ -313,3 +313,28 @@ model PlanSession {
   @@index([planId])
   @@index([start])
 }
+
+// ---------------------------------
+// Calendar (Local app calendar events)
+// ---------------------------------
+
+model CalendarEvent {
+  id            String   @id @default(cuid())
+  courseId      String
+  course        Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?
+  startAt       DateTime
+  endAt         DateTime
+  timezone      String            // IANA, e.g., Asia/Jerusalem
+  recurrenceRule String?          // RRULE text (optional)
+  location      String?
+  visibility    String   @default("course") // allowed: public|course|private
+  ownerUserId   String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([courseId, startAt])
+  @@index([courseId, endAt])
+}
