@@ -95,3 +95,10 @@ if exist logs\app.log (echo קיים) else (echo לא קיים)
 type logs\app.log
 ```
 
+## Backend Calendar API
+
+The backend now exposes local calendar events endpoints (CRUD + list by range) under `/api/calendar/events`.
+
+- View interactive API docs at: `http://localhost:4000/docs`
+- OpenAPI files: `docs/api/openapi.yaml` and `docs/api/openapi.json`
+

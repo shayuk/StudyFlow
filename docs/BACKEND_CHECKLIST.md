@@ -72,6 +72,7 @@ Note: Qdrant usage is gated by env. In local/test it may be disabled with `QDRAN
 - [x] Tests on seeded data.
 
 ## 10) Calendar (ReadOnly — Optional after Core)
+- [x] Local app calendar events API (CRUD + list by range) under `/api/calendar/events`.
 - [ ] Provider interface and Google/Microsoft stub adapters (local only).
 - [ ] GET `/calendar/freebusy` from cached demo data (no OAuth yet).
 - [ ] Planner integrates free/busy windows.
@@ -107,4 +108,5 @@ Status is tracked in this file and via tasks. Commit frequently and keep changes
 ---
 
 ## Next Step (planned)
-- Proceed with Section 11: Quality & Ops — request validation (zod) with 400 errors, basic per‑IP rate limit (local/test), structured logs to `logs/app.log`, and minimal OpenAPI spec in `docs/api/openapi.yaml`.
+- Focus on Section 10 (Calendar): provider adapters and `/calendar/freebusy` (cached demo), then integrate free/busy into Planner.
+- Complete Section 12 pending DX/E2E items: `STAGING_BASE_URL` docs, local `BASE_URL` example, and optional Playwright report artifact.
