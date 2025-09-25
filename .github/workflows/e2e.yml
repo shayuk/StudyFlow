@@ -10,8 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     # Use env value for gating since some runners restrict 'secrets' in expressions here
     env:
-      BASE_URL: ${{ secrets.STAGING_BASE_URL || '' }}
-    if: ${{ env.BASE_URL != '' }}
+      BASE_URL: ${{ secrets.STAGING_BASE_URL }}
+    if: ${{ secrets.STAGING_BASE_URL != '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
