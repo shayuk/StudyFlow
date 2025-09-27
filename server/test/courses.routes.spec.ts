@@ -58,12 +58,13 @@ describe.sequential('Courses routes (CRUD + auth)', () => {
   });
 
   it('POST /api/courses creates a course for admin', async () => {
+    const uniqueCode = `DB${Date.now()}`;
     const res = await request(app)
       .post('/api/courses')
       .set('Authorization', `Bearer ${adminA()}`)
-      .send({ name: 'Intro to Databases', code: 'DB101' })
+      .send({ name: 'Intro to Databases', code: uniqueCode })
       .expect(201);
-    expect(res.body).toMatchObject({ name: 'Intro to Databases', code: 'DB101' });
+    expect(res.body).toMatchObject({ name: 'Intro to Databases', code: uniqueCode });
     expect(typeof res.body.id).toBe('string');
 
     const list = await request(app)
