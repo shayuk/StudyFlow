@@ -72,9 +72,9 @@ Note: Qdrant usage is gated by env. In local/test it may be disabled with `QDRAN
 - [x] Tests on seeded data.
 
 ## 10) Calendar (ReadOnly — Optional after Core)
-- [ ] Provider interface and Google/Microsoft stub adapters (local only).
-- [ ] GET `/calendar/freebusy` from cached demo data (no OAuth yet).
-- [ ] Planner integrates free/busy windows.
+- [x] Provider interface and Google/Microsoft stub adapters (local only).
+- [x] GET `/calendar/freebusy` from cached demo data (no OAuth yet).
+- [x] Planner integrates free/busy windows.
 
 ## 11) Quality & Ops
 - [x] Centralized error handler (problem+json) wired as last middleware.
