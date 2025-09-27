@@ -3,6 +3,7 @@ import { authMiddleware, AuthedRequest } from '../auth/middleware';
 import { requireAnyRole, requireOrg } from '../auth/authorize';
 import { prisma } from '../db';
 import { planSessions, detectConflicts } from '../services/planner';
+import { getDemoFreeBusy } from '../services/calendarProviders';
 
 const router = Router();
 
@@ -74,6 +75,9 @@ router.post(
       orderBy: { start: 'asc' },
     });
 
+    // Also load free/busy windows for the same range (local demo provider)
+    const busy = await getDemoFreeBusy(orgId, userId, from.toISOString(), to.toISOString());
+
     const proposed = planSessions({
       fromDate: from,
       toDate: to,
@@ -85,9 +89,11 @@ router.post(
       description: desc,
     });
 
-    // Conflict detection
+    // Conflict detection: consider both existing sessions and busy windows
+    const existingRanges = existing.map((x) => ({ start: new Date(x.start), end: new Date(x.end) }));
+    const busyRanges = busy.map((b) => ({ start: b.start, end: b.end }));
     const conflicts = detectConflicts(
-      existing.map((x) => ({ start: new Date(x.start), end: new Date(x.end) })),
+      [...existingRanges, ...busyRanges],
       proposed
     );
     if (conflicts.length > 0) {
