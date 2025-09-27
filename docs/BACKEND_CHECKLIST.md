@@ -84,27 +84,27 @@ Note: Qdrant usage is gated by env. In local/test it may be disabled with `QDRAN
 - [x] OpenAPI spec in `docs/api/openapi.yaml` reflecting implemented routes.
 - [x] Swagger UI available at `/docs` (serves `docs/api/openapi.json`, synced from `docs/api/openapi.yaml`); URL logged on startup.
 
-## 12) DX & Scripts (CMD)
 - [x] `pnpm run backend:dev` — start server with nodemon/ts-node.
 - [x] `pnpm run backend:test` — Vitest.
 - [x] `pnpm run backend:seed` — seed demo org/users/courses.
 - [x] `pnpm run backend:lint` — ESLint (clean; warnings only from generated `server/coverage/`).
 - [x] E2E Smoke workflow configured in `.github/workflows/e2e.yml` (gated by `STAGING_BASE_URL`).
-- [ ] Document where to set `STAGING_BASE_URL` (repo secrets) and how to run locally with `BASE_URL`.
-- [ ] Local E2E run: `set BASE_URL=http://localhost:5173 && pnpm run e2e:smoke` (CMD).
-- [ ] Upload Playwright report as artifact in E2E workflow (optional).
+- [x] Document where to set `STAGING_BASE_URL` (repo secrets) and how to run locally with `BASE_URL`.
+- [x] Local E2E run: `set BASE_URL=http://localhost:5173 && pnpm run e2e:smoke` (CMD).
+- [x] Upload Playwright report as artifact in E2E workflow (optional).
 
 ## Done Criteria for Phase A (Local MVP)
 - [ ] All routes above functional locally and tested.
 - [ ] Planner produces sessions; chat streams SSE mock.
 - [x] Knowledge pipeline parses and chunks documents.
-- [ ] No changes made to frontend without approval.
-
----
-
-Status is tracked in this file and via tasks. Commit frequently and keep changes isolated per file as per project rules.
+{{ ... }}
 
 ---
 
 ## Next Step (planned)
 - Proceed with Section 11: Quality & Ops — request validation (zod) with 400 errors, basic per‑IP rate limit (local/test), structured logs to `logs/app.log`, and minimal OpenAPI spec in `docs/api/openapi.yaml`.
+
+---
+
+## Follow-up Tasks (Non‑Blocking)
+- [ ] Set `STAGING_BASE_URL` in GitHub repository secrets after staging frontend is deployed (see `docs/BACKEND_README.md` → CI integration for staging E2E).
