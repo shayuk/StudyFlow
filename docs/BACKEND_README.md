@@ -49,6 +49,20 @@ REM כתובת: http://localhost:4000/docs  (Ctrl+F5)
 pnpm -C server run docs:sync-openapi
 ```
 
+## E2E Smoke — Local (CMD)
+
+To run Playwright smoke tests locally against your frontend dev server:
+
+```cmd
+set BASE_URL=http://localhost:5173
+pnpm run e2e:smoke
+```
+
+Notes:
+- `BASE_URL` must point to a running frontend instance.
+- Use Windows CMD `set` syntax (not PowerShell `$env:`).
+
+
 ## Security & Roles (local)
 - Roles: `student`, `instructor`, `admin`.
 - JWT contains: `sub`, `orgId`, `roles[]`, optional `courseId`.
@@ -195,8 +209,13 @@ pnpm run e2e:smoke
 ```
 
 ### CI integration for staging E2E
-- Set repo secret `STAGING_BASE_URL` to your staging frontend URL.
-- Workflow `/.github/workflows/e2e.yml` runs smoke tests on pushes to `main` and on manual trigger.
+- Set repository secret `STAGING_BASE_URL` to your staging frontend URL in GitHub:
+  - Navigate: Settings → Secrets and variables → Actions → New repository secret
+  - Name: `STAGING_BASE_URL`
+  - Value: `https://<staging-frontend-url>`
+- Workflow `/.github/workflows/e2e.yml` gates on this secret:
+  - If set (non-empty): runs E2E smoke on pushes to `main` and on manual dispatch.
+  - If empty: the job prints a skip notice and exits quickly.
 
 ### Logs & monitoring (basic)
 - Logs are JSON to stdout via `pino`. Capture stdout from your process manager/platform.
