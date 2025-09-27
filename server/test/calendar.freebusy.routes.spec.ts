@@ -40,6 +40,20 @@ describe.sequential('Calendar freebusy route', () => {
     await prisma.$connect();
   });
 
+  it('400 when from is after to', async () => {
+    await request(app)
+      .get('/api/calendar/freebusy?from=2024-01-02T00:00:00.000Z&to=2024-01-01T00:00:00.000Z')
+      .set('Authorization', `Bearer ${anyUser()}`)
+      .expect(400);
+  });
+
+  it('400 when from/to are invalid ISO values', async () => {
+    await request(app)
+      .get('/api/calendar/freebusy?from=not-a-date&to=2024-01-02')
+      .set('Authorization', `Bearer ${anyUser()}`)
+      .expect(400);
+  });
+
   afterAll(async () => {
     await prisma.$disconnect();
   });

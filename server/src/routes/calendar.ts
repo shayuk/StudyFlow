@@ -129,6 +129,14 @@ router.get(
     const from = String(req.query.from || '');
     const to = String(req.query.to || '');
     if (!from || !to) return res.status(400).json({ error: 'from and to are required ISO datetime strings' });
+    const fromD = new Date(from);
+    const toD = new Date(to);
+    if (Number.isNaN(fromD.getTime()) || Number.isNaN(toD.getTime())) {
+      return res.status(400).json({ error: 'from/to must be valid ISO datetime strings' });
+    }
+    if (fromD >= toD) {
+      return res.status(400).json({ error: 'from must be before to' });
+    }
 
     try {
       const items = await getDemoFreeBusy(req.user!.orgId, req.user!.sub, from, to);
