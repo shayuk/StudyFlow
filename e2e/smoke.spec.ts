@@ -2,6 +2,23 @@ import { test, expect } from '@playwright/test';
 
 const BASE_URL = (process.env.BASE_URL || '').trim();
 
+function withAltHost(urlStr: string): string | null {
+  try {
+    const u = new URL(urlStr);
+    if (u.hostname === 'localhost') {
+      u.hostname = '127.0.0.1';
+      return u.toString();
+    }
+    if (u.hostname === '127.0.0.1') {
+      u.hostname = 'localhost';
+      return u.toString();
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 // Skip the whole file if BASE_URL is not provided (e.g., local CI without staging)
 if (!BASE_URL) {
   test.skip(true, 'BASE_URL not set; skipping E2E smoke.');
@@ -9,7 +26,15 @@ if (!BASE_URL) {
 
 // Basic availability
 test('home loads and has a document title', async ({ page }) => {
-  await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
+  let lastErr: unknown = null;
+  try {
+    await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
+  } catch (e) {
+    lastErr = e;
+    const alt = withAltHost(BASE_URL);
+    if (!alt) throw e;
+    await page.goto(alt, { waitUntil: 'domcontentloaded' });
+  }
   const title = await page.title();
   expect(title).toBeTruthy();
 });
