@@ -36,6 +36,15 @@ describe.sequential('Courses routes (CRUD + auth)', () => {
     await prisma.$connect();
   });
 
+  it('PATCH 404 when course not found', async () => {
+    const nonExistentId = 'course_missing_404';
+    await request(app)
+      .patch(`/api/courses/${nonExistentId}`)
+      .set('Authorization', `Bearer ${adminA()}`)
+      .send({ name: 'Nope' })
+      .expect(404);
+  });
+
   beforeEach(async () => {
     // Clean only data for this suite's orgs to avoid interfering with other specs
     const ORGS = ['org_demo_1', 'org_demo_2'];
