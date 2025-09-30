@@ -128,8 +128,10 @@ components:
         botInstanceId: { type: string }
         userId: { type: string }
         role: { type: string }
-        pageId: { type: string, nullable: true }
-        courseId: { type: string, nullable: true }
+        pageId:
+          type: [string, 'null']
+        courseId:
+          type: [string, 'null']
     Message:
       description: Persisted chat message with optional citations.
       type: object
@@ -175,7 +177,8 @@ components:
       properties:
         id: { type: string }
         name: { type: string }
-        meta: { type: string, nullable: true }
+        meta:
+          type: [string, 'null']
         createdAt: { type: string, format: date-time }
     KnowledgeDocument:
       description: Uploaded knowledge document metadata.
@@ -196,7 +199,8 @@ components:
         mime: { type: string }
         size: { type: integer }
         status: { type: string }
-        error: { type: string, nullable: true }
+        error:
+          type: [string, 'null']
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
         chunks: { type: integer }
@@ -232,7 +236,9 @@ components:
             messages: { type: integer }
             participants: { type: integer }
           required: [conversations, messages, participants]
-        lastActivity: { type: string, format: date-time, nullable: true }
+        lastActivity:
+          type: [string, 'null']
+          format: date-time
       required: [courseId, counts]
     PlanSessionOut:
       description: Planned study session returned by planner.
@@ -240,8 +246,10 @@ components:
       properties:
         start: { type: string, format: date-time }
         end: { type: string, format: date-time }
-        topic: { type: string, nullable: true }
-        description: { type: string, nullable: true }
+        topic:
+          type: [string, 'null']
+        description:
+          type: [string, 'null']
         status: { type: string }
     PlanSessionsResponse:
       description: Planner result with plan id and generated sessions.

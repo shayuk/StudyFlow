@@ -1435,12 +1435,16 @@
             "type": "string"
           },
           "pageId": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "courseId": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ]
           }
         }
       },
@@ -1560,8 +1564,10 @@
             "type": "string"
           },
           "meta": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "createdAt": {
             "type": "string",
@@ -1614,8 +1620,10 @@
             "type": "string"
           },
           "error": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "createdAt": {
             "type": "string",
@@ -1706,9 +1714,11 @@
             ]
           },
           "lastActivity": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
           }
         },
         "required": [
@@ -1729,12 +1739,16 @@
             "format": "date-time"
           },
           "topic": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "description": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "status": {
             "type": "string"
