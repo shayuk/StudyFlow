@@ -39,6 +39,7 @@ jobs:
 
       - name: Install Playwright browsers
         if: ${{ env.BASE_URL != '' }}
+        run: pnpm exec playwright install --with-deps
       - name: Run E2E smoke
         if: ${{ env.BASE_URL != '' }}
         run: pnpm run e2e:smoke
