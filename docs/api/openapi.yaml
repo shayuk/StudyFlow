@@ -30,6 +30,8 @@ tags:
     description: Analytics and aggregates for courses
   - name: Calendar
     description: Calendar adapters and free/busy endpoints
+  - name: Bots
+    description: Bot management, versions and deployments
 components:
   securitySchemes:
     bearerAuth:
@@ -268,6 +270,37 @@ components:
         status: { type: integer }
         detail: { type: string }
         instance: { type: string }
+    Bot:
+      description: Bot entity
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        persona:
+          type: [string, 'null']
+      required: [id, name]
+    BotVersion:
+      description: Bot version entity
+      type: object
+      properties:
+        id: { type: string }
+        status: { type: string, enum: [draft, prepared, published, retired] }
+        prompts:
+          type: [string, 'null']
+        tools:
+          type: [string, 'null']
+        temperature:
+          type: [number, 'null']
+      required: [id, status]
+    BotInstance:
+      description: Deployed bot instance bound to a course
+      type: object
+      properties:
+        id: { type: string }
+        courseId: { type: string }
+        botId: { type: string }
+        versionId: { type: string }
+        createdAt: { type: string, format: date-time }
 paths:
   /health:
     get:
@@ -277,6 +310,181 @@ paths:
       responses:
         '200':
           description: OK
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+  /api/bots:
+    get:
+      summary: List bots in caller's org
+      tags: [Bots]
+      security: [ { bearerAuth: [] } ]
+      operationId: listBots
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/Bot' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+    post:
+      summary: Create a bot (instructor/admin)
+      tags: [Bots]
+      security: [ { bearerAuth: [] } ]
+      operationId: createBot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                persona: {}
+              required: [name]
+            examples:
+              basic:
+                value:
+                  name: "Tutor Bot"
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Bot' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '403': { description: Forbidden }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '409': { description: Conflict }
+  /api/bots/{botId}/versions:
+    post:
+      summary: Create a bot version (instructor/admin)
+      tags: [Bots]
+      security: [ { bearerAuth: [] } ]
+      operationId: createBotVersion
+      parameters:
+        - name: botId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prompts: {}
+                tools: {}
+                temperature: { type: number }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BotVersion' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '403': { description: Forbidden }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+  /api/bot-versions/{versionId}:
+    patch:
+      summary: Update bot version (status/prompts/tools/temperature)
+      tags: [Bots]
+      security: [ { bearerAuth: [] } ]
+      operationId: updateBotVersion
+      parameters:
+        - name: versionId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status: { type: string, enum: [draft, prepared, published, retired] }
+                prompts: {}
+                tools: {}
+                temperature: { type: number }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BotVersion' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '403': { description: Forbidden }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+  /api/bots/{botId}/deploy:
+    post:
+      summary: Deploy a bot to a course with a published version
+      tags: [Bots]
+      security: [ { bearerAuth: [] } ]
+      operationId: deployBot
+      parameters:
+        - name: botId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                courseId: { type: string }
+                versionId: { type: string }
+              required: [courseId]
+            examples:
+              basic:
+                value:
+                  courseId: "c_123"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BotInstance' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '403': { description: Forbidden }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '409': { description: Conflict }
+  /api/bot-instances:
+    get:
+      summary: List bot instances (optionally by courseId)
+      tags: [Bots]
+      security: [ { bearerAuth: [] } ]
+      operationId: listBotInstances
+      parameters:
+        - name: courseId
+          in: query
+          required: false
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/BotInstance' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '429': { $ref: '#/components/responses/TooManyRequests' }
   /api/courses:
     get:

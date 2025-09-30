@@ -4,6 +4,8 @@ import { requireAnyRole, requireOrg } from '../auth/authorize';
 import { prisma } from '../db';
 import { planSessions, detectConflicts } from '../services/planner';
 import { getDemoFreeBusy } from '../services/calendarProviders';
+import { z } from 'zod';
+import { logger } from '../logger';
 
 const router = Router();
 
@@ -18,44 +20,44 @@ router.post(
     const orgId = req.user!.orgId;
     const userId = req.user!.sub;
 
+    const schema = z.object({
+      courseId: z.string().optional(),
+      fromDate: z.string().min(1),
+      toDate: z.string().min(1),
+      sessionMinutes: z.number().int().positive({ message: 'sessionMinutes must be > 0' }),
+      dailyCap: z.number().int().positive({ message: 'dailyCap must be > 0' }),
+      preferredStartHour: z.number().int().min(0).max(23).optional(),
+      preferredEndHour: z.number().int().min(0).max(23).optional(),
+      topics: z.array(z.string()).optional(),
+      description: z.string().optional(),
+    }).refine((data) => {
+      if (data.preferredStartHour !== undefined && data.preferredEndHour !== undefined) {
+        return data.preferredEndHour > data.preferredStartHour;
+      }
+      return true;
+    }, { message: 'preferredEndHour must be > preferredStartHour', path: ['preferredEndHour'] });
+
+    const parsed = schema.safeParse(req.body ?? {});
+    if (!parsed.success) {
+      const msg = parsed.error.issues[0]?.message ?? 'invalid body';
+      return res.status(400).json({ error: msg });
+    }
+
     const {
-      courseId,
+      courseId: courseIdStr,
       fromDate,
       toDate,
-      sessionMinutes,
-      dailyCap,
-      preferredStartHour,
-      preferredEndHour,
-      topics,
-      description,
-    } = (req.body ?? {}) as Record<string, unknown>;
+      sessionMinutes: minutes,
+      dailyCap: cap,
+      preferredStartHour: startHr,
+      preferredEndHour: endHr,
+      topics: topicsArr,
+      description: desc,
+    } = parsed.data;
 
-    // Minimal validation (follow existing style; avoid new deps like zod for now)
-    if (!fromDate || !toDate) return res.status(400).json({ error: 'fromDate and toDate are required' });
-    const from = new Date(String(fromDate));
-    const to = new Date(String(toDate));
+    const from = new Date(fromDate);
+    const to = new Date(toDate);
     if (isNaN(from.getTime()) || isNaN(to.getTime())) return res.status(400).json({ error: 'invalid fromDate/toDate' });
-
-    const minutes = Number(sessionMinutes);
-    const cap = Number(dailyCap);
-    if (!Number.isFinite(minutes) || minutes <= 0) return res.status(400).json({ error: 'sessionMinutes must be > 0' });
-    if (!Number.isFinite(cap) || cap <= 0) return res.status(400).json({ error: 'dailyCap must be > 0' });
-
-    const startHr = preferredStartHour === undefined ? undefined : Number(preferredStartHour);
-    const endHr = preferredEndHour === undefined ? undefined : Number(preferredEndHour);
-    if (startHr !== undefined && (!Number.isInteger(startHr) || startHr < 0 || startHr > 23)) {
-      return res.status(400).json({ error: 'preferredStartHour must be an integer 0..23' });
-    }
-    if (endHr !== undefined && (!Number.isInteger(endHr) || endHr < 0 || endHr > 23)) {
-      return res.status(400).json({ error: 'preferredEndHour must be an integer 0..23' });
-    }
-    if (startHr !== undefined && endHr !== undefined && endHr <= startHr) {
-      return res.status(400).json({ error: 'preferredEndHour must be > preferredStartHour' });
-    }
-
-    const topicsArr = Array.isArray(topics) ? (topics as unknown[]).map(String).filter(Boolean) : undefined;
-    const desc = description === undefined ? undefined : String(description);
-    const courseIdStr = courseId === undefined ? undefined : String(courseId);
 
     // Load existing sessions in range, scoped by org+user (+optional course)
     // We filter PlanSession by related Plan fields and date overlap window
@@ -97,6 +99,7 @@ router.post(
       proposed
     );
     if (conflicts.length > 0) {
+      logger.warn({ orgId, userId, conflicts: conflicts.length, route: 'POST /api/planner/plan' }, 'Planner conflicts');
       return res.status(409).json({ error: 'conflicts', count: conflicts.length });
     }
 
@@ -138,6 +141,7 @@ router.post(
       }
 
       // Return sessions as response
+      logger.info({ orgId, userId, planId: plan.id, sessions: proposed.length, route: 'POST /api/planner/plan' }, 'Planner created');
       return res.status(201).json({
         planId: plan.id,
         sessions: proposed.map((s) => ({
@@ -150,6 +154,7 @@ router.post(
       });
     } catch (err: unknown) {
       const detail = err instanceof Error ? err.message : String(err);
+      logger.error({ orgId, userId, err: detail, route: 'POST /api/planner/plan' }, 'Planner persist failed');
       return res.status(500).json({ error: 'persist failed', detail });
     }
   }

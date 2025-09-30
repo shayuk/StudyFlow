@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { authMiddleware, AuthedRequest } from '../auth/middleware';
 import { requireOrg, requireAnyRole } from '../auth/authorize';
 import { prisma } from '../db';
+import { logger } from '../logger';
 import { z } from 'zod';
 
 const router = Router();
@@ -39,9 +40,11 @@ router.post('/courses', authMiddleware, requireOrg(), requireAnyRole(['instructo
     });
 
     const created = await prisma.course.create({ data: { name, code, orgId } });
+    logger.info({ orgId, courseId: created.id, route: 'POST /api/courses' }, 'Course created');
     return res.status(201).json({ id: created.id, name: created.name, code: created.code });
   } catch (err: unknown) {
     const detail = err instanceof Error ? err.message : String(err);
+    logger.warn({ orgId, err: detail, route: 'POST /api/courses' }, 'Course create failed');
     return res.status(409).json({ error: 'unique constraint or create failed', detail });
   }
 });
@@ -76,9 +79,11 @@ router.patch('/courses/:courseId', authMiddleware, requireOrg(), requireAnyRole(
         ...(code !== undefined ? { code } : {}),
       },
     });
+    logger.info({ orgId, courseId: updated.id, route: 'PATCH /api/courses/:courseId' }, 'Course updated');
     return res.status(200).json({ id: updated.id, name: updated.name, code: updated.code });
   } catch (err: unknown) {
     const detail = err instanceof Error ? err.message : String(err);
+    logger.warn({ orgId, courseId, err: detail, route: 'PATCH /api/courses/:courseId' }, 'Course update failed');
     return res.status(409).json({ error: 'update failed (maybe unique code)', detail });
   }
 });
@@ -99,9 +104,11 @@ router.delete('/courses/:courseId', authMiddleware, requireOrg(), requireAnyRole
   try {
     await prisma.enrollment.deleteMany({ where: { courseId } });
     await prisma.course.delete({ where: { id: courseId } });
+    logger.info({ orgId, courseId, route: 'DELETE /api/courses/:courseId' }, 'Course deleted');
     return res.status(204).send();
   } catch (err: unknown) {
     const detail = err instanceof Error ? err.message : String(err);
+    logger.warn({ orgId, courseId, err: detail, route: 'DELETE /api/courses/:courseId' }, 'Course delete failed');
     return res.status(409).json({ error: 'delete failed', detail });
   }
 });
