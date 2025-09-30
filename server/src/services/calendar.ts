@@ -29,8 +29,15 @@ export interface UpdateCalendarEventInput {
 }
 
 function isIanaTz(tz: string): boolean {
-  // Conservative check: Region/City, letters/underscores, optional third part
-  return /^[A-Za-z_]+\/[A-Za-z_]+(?:\/[A-Za-z_]+)?$/.test(tz);
+  // First, quick structural check: Region/City with letters/underscores
+  if (!/^[A-Za-z_]+\/[A-Za-z_]+(?:\/[A-Za-z_]+)?$/.test(tz)) return false;
+  // Then, verify against runtime IANA database (throws on invalid zone)
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone: tz });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function toDate(value: string, field: string): Date {
