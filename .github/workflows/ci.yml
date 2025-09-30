@@ -9,6 +9,8 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ vars.DATABASE_URL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,22 +39,28 @@ jobs:
         run: |
           if [ ! -f server/.env ]; then cp server/.env.example server/.env; fi
 
-      # ⬇️ מריצים ישירות מתוך server/
+      - name: Ensure DATABASE_URL (with fallback)
+        shell: bash
+        run: |
+          : "${DATABASE_URL:=file:./server/prisma/dev-ci.db}"
+          echo "DATABASE_URL=$DATABASE_URL" >> "$GITHUB_ENV"
+
+      # 
       - name: Generate Prisma client
         working-directory: server
         run: pnpm prisma generate
 
-      # ⬇️ הרצת db push מתוך server/
+      # 
       - name: Apply Prisma schema (db push)
         working-directory: server
         run: pnpm prisma db push
 
-      # ⬇️ Build backend from server/
+      # 
       - name: Build backend
         working-directory: server
         run: pnpm build
 
-      # זיהוי scripts כדי להריץ טסטים רק אם קיימים
+      # 
       - name: Detect test scripts
         id: detect
         shell: bash
@@ -62,7 +70,7 @@ jobs:
           echo "has_test=$HAS_TEST" >> "$GITHUB_OUTPUT"
           echo "has_testcov=$HAS_TESTCOV" >> "$GITHUB_OUTPUT"
 
-      # ⬇️ הרצת טסטים מתוך server/ רק אם יש script test
+      # 
       - name: Test backend (no coverage)
         if: ${{ steps.detect.outputs.has_test == '1' }}
         working-directory: server
@@ -73,6 +81,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-test
     continue-on-error: true
+    env:
+      DATABASE_URL: ${{ vars.DATABASE_URL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
