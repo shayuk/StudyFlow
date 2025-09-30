@@ -30,6 +30,8 @@ model User {
   // Optional profile fields for future use
   email     String?  @unique
   name      String?
+  // App-level role (student|lecturer|admin). SQLite: use string instead of enum.
+  role      String   @default("student")
   createdAt DateTime @default(now())
   enrollments Enrollment[]
   plans       Plan[]

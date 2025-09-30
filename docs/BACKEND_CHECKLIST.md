@@ -109,3 +109,15 @@ Note: Qdrant usage is gated by env. In local/test it may be disabled with `QDRAN
 
 ## Follow-up Tasks (Non‑Blocking)
 - [ ] Set `STAGING_BASE_URL` in GitHub repository secrets after staging frontend is deployed (see `docs/BACKEND_README.md` → CI integration for staging E2E).
+
+---
+
+## Default Admin seeding
+- Configure `DEFAULT_ADMIN_EMAIL` in environment files:
+  - `server/.env.local` (dev)
+  - `server/.env.staging` (staging)
+  - production env/secret store
+- On server startup, `ensureDefaultAdmin()` will:
+  - Create a default Org if none exists
+  - Create a user with that email as `admin` if missing
+  - Promote existing user with that email to `admin` if needed
