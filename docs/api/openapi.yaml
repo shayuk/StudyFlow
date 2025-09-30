@@ -5,20 +5,31 @@ info:
   description: |
     Draft OpenAPI spec for the local backend. Scope is limited to core routes
     implemented under `server/src/routes/`. This spec will evolve and expand.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
 servers:
-  - url: http://localhost:4000
-    description: Local dev
+  - url: https://api.studyflow.local
+    description: Local or staging gateway
 security:
   - bearerAuth: []
 tags:
   - name: Health
+    description: Basic health and identity endpoints
   - name: Courses
+    description: Course CRUD endpoints scoped by organization
   - name: Chat
+    description: Chat conversations and messages (SSE capable)
   - name: Knowledge
+    description: Knowledge intake, documents, and search APIs
   - name: Planner
+    description: Study session planner endpoints
   - name: Progress
+    description: Mastery and progress endpoints
   - name: Analytics
+    description: Analytics and aggregates for courses
   - name: Calendar
+    description: Calendar adapters and free/busy endpoints
 components:
   securitySchemes:
     bearerAuth:
@@ -85,7 +96,8 @@ components:
       properties:
         id: { type: string }
         name: { type: string }
-        code: { type: string, nullable: true }
+        code:
+          type: [string, 'null']
       required: [id, name]
     CourseListItem:
       description: Course item as returned in list endpoints (includes createdAt)
@@ -93,7 +105,8 @@ components:
       properties:
         id: { type: string }
         name: { type: string }
-        code: { type: string, nullable: true }
+        code:
+          type: [string, 'null']
         createdAt: { type: string, format: date-time }
       required: [id, name, createdAt]
     CreateCourseInput:
@@ -143,8 +156,10 @@ components:
         botInstanceId: { type: string }
         userId: { type: string }
         role: { type: string }
-        pageId: { type: string, nullable: true }
-        courseId: { type: string, nullable: true }
+        pageId:
+          type: [string, 'null']
+        courseId:
+          type: [string, 'null']
         createdAt: { type: string, format: date-time }
       required: [id, orgId, botInstanceId, userId, role, createdAt]
     MessagesPair:
@@ -250,14 +265,17 @@ paths:
     get:
       summary: Health check
       tags: [Health]
+      operationId: healthCheck
       responses:
         '200':
           description: OK
+        '429': { $ref: '#/components/responses/TooManyRequests' }
   /api/courses:
     get:
       summary: List courses in caller's org
       tags: [Courses]
       security: [ { bearerAuth: [] } ]
+      operationId: listCourses
       responses:
         '200':
           description: OK
@@ -281,6 +299,7 @@ paths:
       summary: Create a course in caller's org (instructor/admin)
       tags: [Courses]
       security: [ { bearerAuth: [] } ]
+      operationId: createCourse
       requestBody:
         required: true
         content:
@@ -310,6 +329,7 @@ paths:
       summary: Update a course (instructor/admin)
       tags: [Courses]
       security: [ { bearerAuth: [] } ]
+      operationId: updateCourse
       parameters:
         - name: courseId
           in: path
@@ -340,6 +360,7 @@ paths:
       summary: Delete a course (instructor/admin)
       tags: [Courses]
       security: [ { bearerAuth: [] } ]
+      operationId: deleteCourse
       parameters:
         - name: courseId
           in: path
@@ -358,6 +379,7 @@ paths:
       description: Local-only demo endpoint that returns busy windows for the current user in the given range. Intended for planner integration. Real providers will be added later.
       tags: [Calendar]
       security: [ { bearerAuth: [] } ]
+      operationId: getFreeBusy
       parameters:
         - name: from
           in: query
@@ -397,6 +419,7 @@ paths:
       summary: Start a conversation
       tags: [Chat]
       security: [ { bearerAuth: [] } ]
+      operationId: startConversation
       requestBody:
         required: true
         content:
@@ -428,6 +451,7 @@ paths:
       summary: Post a message; optionally SSE stream bot reply
       tags: [Chat]
       security: [ { bearerAuth: [] } ]
+      operationId: postMessage
       parameters:
         - name: conversationId
           in: path
@@ -467,6 +491,7 @@ paths:
       summary: List messages in a conversation
       tags: [Chat]
       security: [ { bearerAuth: [] } ]
+      operationId: listMessages
       parameters:
         - name: conversationId
           in: path
@@ -498,6 +523,7 @@ paths:
       summary: Create a knowledge source (instructor/admin)
       tags: [Knowledge]
       security: [ { bearerAuth: [] } ]
+      operationId: createKnowledgeSource
       requestBody:
         required: true
         content:
@@ -528,6 +554,7 @@ paths:
       summary: Upload a document (multipart)
       tags: [Knowledge]
       security: [ { bearerAuth: [] } ]
+      operationId: uploadKnowledgeDocument
       requestBody:
         required: true
         content:
@@ -556,6 +583,7 @@ paths:
       summary: Get uploaded document status and chunk count
       tags: [Knowledge]
       security: [ { bearerAuth: [] } ]
+      operationId: getKnowledgeDocument
       parameters:
         - name: id
           in: path
@@ -576,6 +604,7 @@ paths:
       summary: Search knowledge (hybrid)
       tags: [Knowledge]
       security: [ { bearerAuth: [] } ]
+      operationId: searchKnowledge
       parameters:
         - name: q
           in: query
@@ -601,6 +630,7 @@ paths:
       summary: Generate plan sessions from constraints
       tags: [Planner]
       security: [ { bearerAuth: [] } ]
+      operationId: generatePlan
       requestBody:
         required: true
         content:
@@ -653,6 +683,7 @@ paths:
       summary: Get mastery snapshots for current user
       tags: [Progress]
       security: [ { bearerAuth: [] } ]
+      operationId: getStudentProgress
       parameters:
         - name: courseId
           in: query
@@ -678,6 +709,7 @@ paths:
       summary: Upsert a mastery snapshot for current user
       tags: [Progress]
       security: [ { bearerAuth: [] } ]
+      operationId: upsertSelfReport
       requestBody:
         required: true
         content:
@@ -711,6 +743,7 @@ paths:
       summary: Course aggregates (counts + lastActivity)
       tags: [Analytics]
       security: [ { bearerAuth: [] } ]
+      operationId: getCourseAnalytics
       parameters:
         - name: courseId
           in: path
@@ -737,6 +770,7 @@ paths:
       summary: Current authenticated user payload
       tags: [Health]
       security: [ { bearerAuth: [] } ]
+      operationId: getMe
       responses:
         '200':
           description: OK

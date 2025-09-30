@@ -3,12 +3,16 @@
   "info": {
     "title": "StudyFlow Local API (Draft)",
     "version": "0.1.0",
-    "description": "Draft OpenAPI spec for the local backend. Scope is limited to core routes\nimplemented under `server/src/routes/`. This spec will evolve and expand.\n"
+    "description": "Draft OpenAPI spec for the local backend. Scope is limited to core routes\nimplemented under `server/src/routes/`. This spec will evolve and expand.\n",
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
   },
   "servers": [
     {
-      "url": "http://localhost:4000",
-      "description": "Local dev"
+      "url": "https://api.studyflow.local",
+      "description": "Local or staging gateway"
     }
   ],
   "security": [
@@ -18,28 +22,36 @@
   ],
   "tags": [
     {
-      "name": "Health"
+      "name": "Health",
+      "description": "Basic health and identity endpoints"
     },
     {
-      "name": "Courses"
+      "name": "Courses",
+      "description": "Course CRUD endpoints scoped by organization"
     },
     {
-      "name": "Chat"
+      "name": "Chat",
+      "description": "Chat conversations and messages (SSE capable)"
     },
     {
-      "name": "Knowledge"
+      "name": "Knowledge",
+      "description": "Knowledge intake, documents, and search APIs"
     },
     {
-      "name": "Planner"
+      "name": "Planner",
+      "description": "Study session planner endpoints"
     },
     {
-      "name": "Progress"
+      "name": "Progress",
+      "description": "Mastery and progress endpoints"
     },
     {
-      "name": "Analytics"
+      "name": "Analytics",
+      "description": "Analytics and aggregates for courses"
     },
     {
-      "name": "Calendar"
+      "name": "Calendar",
+      "description": "Calendar adapters and free/busy endpoints"
     }
   ],
   "paths": {
@@ -49,9 +61,13 @@
         "tags": [
           "Health"
         ],
+        "operationId": "healthCheck",
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
           }
         }
       }
@@ -67,6 +83,7 @@
             "bearerAuth": []
           }
         ],
+        "operationId": "listCourses",
         "responses": {
           "200": {
             "description": "OK",
@@ -124,6 +141,7 @@
             "bearerAuth": []
           }
         ],
+        "operationId": "createCourse",
         "requestBody": {
           "required": true,
           "content": {
@@ -191,6 +209,7 @@
             "bearerAuth": []
           }
         ],
+        "operationId": "updateCourse",
         "parameters": [
           {
             "name": "courseId",
@@ -259,6 +278,7 @@
             "bearerAuth": []
           }
         ],
+        "operationId": "deleteCourse",
         "parameters": [
           {
             "name": "courseId",
@@ -303,6 +323,7 @@
             "bearerAuth": []
           }
         ],
+        "operationId": "getFreeBusy",
         "parameters": [
           {
             "name": "from",
@@ -394,6 +415,7 @@
             "bearerAuth": []
           }
         ],
+        "operationId": "startConversation",
         "requestBody": {
           "required": true,
           "content": {
@@ -465,6 +487,7 @@
             "bearerAuth": []
           }
         ],
+        "operationId": "postMessage",
         "parameters": [
           {
             "name": "conversationId",
@@ -554,6 +577,7 @@
             "bearerAuth": []
           }
         ],
+        "operationId": "listMessages",
         "parameters": [
           {
             "name": "conversationId",
@@ -631,6 +655,7 @@
             "bearerAuth": []
           }
         ],
+        "operationId": "createKnowledgeSource",
         "requestBody": {
           "required": true,
           "content": {
@@ -697,6 +722,7 @@
             "bearerAuth": []
           }
         ],
+        "operationId": "uploadKnowledgeDocument",
         "requestBody": {
           "required": true,
           "content": {
@@ -760,6 +786,7 @@
             "bearerAuth": []
           }
         ],
+        "operationId": "getKnowledgeDocument",
         "parameters": [
           {
             "name": "id",
@@ -807,6 +834,7 @@
             "bearerAuth": []
           }
         ],
+        "operationId": "searchKnowledge",
         "parameters": [
           {
             "name": "q",
@@ -864,6 +892,7 @@
             "bearerAuth": []
           }
         ],
+        "operationId": "generatePlan",
         "requestBody": {
           "required": true,
           "content": {
@@ -995,6 +1024,7 @@
             "bearerAuth": []
           }
         ],
+        "operationId": "getStudentProgress",
         "parameters": [
           {
             "name": "courseId",
@@ -1050,6 +1080,7 @@
             "bearerAuth": []
           }
         ],
+        "operationId": "upsertSelfReport",
         "requestBody": {
           "required": true,
           "content": {
@@ -1127,6 +1158,7 @@
             "bearerAuth": []
           }
         ],
+        "operationId": "getCourseAnalytics",
         "parameters": [
           {
             "name": "courseId",
@@ -1187,6 +1219,7 @@
             "bearerAuth": []
           }
         ],
+        "operationId": "getMe",
         "responses": {
           "200": {
             "description": "OK",
@@ -1320,8 +1353,10 @@
             "type": "string"
           },
           "code": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [
@@ -1340,8 +1375,10 @@
             "type": "string"
           },
           "code": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "createdAt": {
             "type": "string",
@@ -1471,12 +1508,16 @@
             "type": "string"
           },
           "pageId": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "courseId": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "createdAt": {
             "type": "string",
