@@ -155,18 +155,23 @@ router.get('/bot-instances', authMiddleware, requireOrg(), requireAnyRole(['inst
   const orgId = req.user!.orgId;
   const { courseId } = req.query as { courseId?: string };
 
-  const where: { courseId?: string } = {};
-  if (courseId) where.courseId = courseId;
+  const where: any = {
+    ...(courseId ? { courseId } : {}),
+    // ensure related records exist and restrict to caller org
+    bot: { is: { orgId } },
+    version: { is: {} },
+  };
 
   const instances = await prisma.botInstance.findMany({
     where,
     orderBy: { createdAt: 'desc' },
-    include: { bot: true, version: true },
+    include: {
+      bot: { select: { id: true, name: true, orgId: true } },
+      version: { select: { id: true, status: true } },
+    },
   });
 
-  // filter by org (via bot.orgId)
-  const filtered = instances.filter((i) => i.bot.orgId === orgId);
-  return res.status(200).json({ items: filtered.map((i) => ({
+  return res.status(200).json({ items: instances.map((i) => ({
     id: i.id,
     courseId: i.courseId,
     botId: i.botId,
