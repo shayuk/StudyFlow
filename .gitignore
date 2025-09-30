@@ -36,3 +36,4 @@ server/coverage/
 test-results/
 server/prisma/prisma/dev.db
 server/prisma/migrations/
+server/prisma/server/
