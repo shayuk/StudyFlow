@@ -94,8 +94,8 @@ Note: Qdrant usage is gated by env. In local/test it may be disabled with `QDRAN
 - [x] Upload Playwright report as artifact in E2E workflow (optional).
 
 ## Done Criteria for Phase A (Local MVP)
-- [ ] All routes above functional locally and tested.
-- [ ] Planner produces sessions; chat streams SSE mock.
+- [x] All routes above functional locally and tested.
+- [x] Planner produces sessions; chat streams SSE mock.
 - [x] Knowledge pipeline parses and chunks documents.
 - [x] Consistent error tests added (400/401/403/404/409 where applicable).
 {{ ... }}
