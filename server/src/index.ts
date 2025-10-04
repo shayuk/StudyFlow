@@ -13,7 +13,6 @@ import knowledgeRouter from './routes/knowledge';
 import plannerRouter from './routes/planner';
 import analyticsRouter from './routes/analytics';
 import { errorHandler } from './middleware/error';
-import { ensureDefaultAdmin } from './bootstrap/ensureDefaultAdmin';
 
 const app = express();
 
@@ -62,16 +61,6 @@ app.use('/api', analyticsRouter);
 
 // Centralized error handler must be last
 app.use(errorHandler);
-
-const PORT = process.env.PORT ? Number(process.env.PORT) : 4000;
-
-app.listen(PORT, () => {
-  logger.info({ port: PORT, docs: `http://localhost:${PORT}/docs` }, 'Backend server started');
-  // Fire-and-forget default admin ensure (does not block startup)
-  ensureDefaultAdmin().catch((err) => {
-    logger.error({ err }, 'ensureDefaultAdmin failed');
-  });
-});
 
 // Export the app for integration testing (Supertest)
 export { app };
