@@ -34,8 +34,9 @@ router.post(
         ownerUserId: req.user!.sub,
       });
       return res.status(201).json(saved);
-    } catch (err: any) {
-      return res.status(400).json({ error: String(err?.message || 'validation error') });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'validation error';
+      return res.status(400).json({ error: msg });
     }
   }
 );
@@ -70,8 +71,9 @@ router.patch(
     try {
       const patched = await updateEvent(req.params.id, req.body ?? {});
       return res.status(200).json(patched);
-    } catch (err: any) {
-      return res.status(400).json({ error: String(err?.message || 'validation error') });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'validation error';
+      return res.status(400).json({ error: msg });
     }
   }
 );
@@ -110,8 +112,9 @@ router.get(
     try {
       const items = await listEventsByCourseAndRange(courseId, from, to);
       return res.status(200).json({ items });
-    } catch (err: any) {
-      return res.status(400).json({ error: String(err?.message || 'validation error') });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'validation error';
+      return res.status(400).json({ error: msg });
     }
   }
 );
@@ -143,8 +146,9 @@ router.get(
       return res.status(200).json({
         items: items.map(x => ({ start: x.start.toISOString(), end: x.end.toISOString() }))
       });
-    } catch (err: any) {
-      return res.status(400).json({ error: String(err?.message || 'validation error') });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'validation error';
+      return res.status(400).json({ error: msg });
     }
   }
 );

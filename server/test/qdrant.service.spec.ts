@@ -1,8 +1,17 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ensureCollection, upsertChunks, search, buildOrgFilter } from '../src/services/qdrant';
 
-function mockFetchOnce(status: number, body: any, ok = status >= 200 && status < 300) {
-  (global as any).fetch = vi.fn(async () => ({ ok, status, text: async () => JSON.stringify(body), json: async () => body, body: undefined })) as any;
+type MockResponseBody = unknown;
+type MockResponse = { ok: boolean; status: number; text: () => Promise<string>; json: () => Promise<unknown>; body?: unknown };
+
+function mockFetchOnce(status: number, body: MockResponseBody, ok = status >= 200 && status < 300) {
+  (global as unknown as { fetch: unknown }).fetch = vi.fn(async () => ({
+    ok,
+    status,
+    text: async () => JSON.stringify(body),
+    json: async () => body,
+    body: undefined,
+  } satisfies MockResponse)) as unknown as typeof fetch;
 }
 
 describe('qdrant service (http stubs)', () => {
@@ -13,16 +22,18 @@ describe('qdrant service (http stubs)', () => {
   it('ensureCollection: does nothing if collection exists', async () => {
     mockFetchOnce(200, { result: 'ok' }, true);
     await ensureCollection();
-    expect((global as any).fetch).toHaveBeenCalledTimes(1);
+    const gf = (globalThis as unknown as { fetch: ReturnType<typeof vi.fn> }).fetch;
+    expect(gf).toHaveBeenCalledTimes(1);
   });
 
   it('ensureCollection: creates when missing', async () => {
     // first GET not ok -> then PUT ok
-    (global as any).fetch = vi.fn()
-      .mockResolvedValueOnce({ ok: false, status: 404, text: async () => 'missing' })
-      .mockResolvedValueOnce({ ok: true, status: 200, text: async () => 'created' });
+    (global as unknown as { fetch: unknown }).fetch = vi.fn()
+      .mockResolvedValueOnce({ ok: false, status: 404, text: async () => 'missing' } satisfies Partial<MockResponse>)
+      .mockResolvedValueOnce({ ok: true, status: 200, text: async () => 'created' } satisfies Partial<MockResponse>) as unknown as typeof fetch;
     await ensureCollection();
-    expect((global as any).fetch).toHaveBeenCalledTimes(2);
+    const gf = (global as unknown as { fetch: ReturnType<typeof vi.fn> }).fetch;
+    expect(gf).toHaveBeenCalledTimes(2);
   });
 
   it('upsertChunks: throws on failure', async () => {

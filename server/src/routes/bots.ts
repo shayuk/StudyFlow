@@ -4,6 +4,7 @@ import { requireOrg, requireAnyRole } from '../auth/authorize';
 import { prisma } from '../db';
 import { z } from 'zod';
 import { logger } from '../logger';
+import type { Prisma } from '@prisma/client';
 
 const router = Router();
 
@@ -191,7 +192,7 @@ router.get('/bot-instances', authMiddleware, requireOrg(), requireAnyRole(['inst
   const orgId = req.user!.orgId;
   const { courseId } = req.query as { courseId?: string };
 
-  const where: any = {
+  const where: Prisma.BotInstanceWhereInput = {
     ...(courseId ? { courseId } : {}),
     // ensure related records exist and restrict to caller org
     bot: { is: { orgId } },

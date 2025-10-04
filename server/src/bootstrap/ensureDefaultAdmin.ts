@@ -1,6 +1,7 @@
 import { prisma } from '../db';
 import { logger } from '../logger';
 import { DEFAULT_ADMIN_EMAIL } from '../config';
+import type { Prisma } from '@prisma/client';
 
 function isValidEmail(email: string): boolean {
   return /.+@.+\..+/.test(email);
@@ -29,14 +30,16 @@ export async function ensureDefaultAdmin(): Promise<void> {
   // Try find user by email
   const existing = await prisma.user.findUnique({ where: { email } });
   if (!existing) {
-    // Cast to any to avoid TS mismatch before prisma generate runs
-    await prisma.user.create({ data: { orgId: org.id, email, role: 'admin' } as any });
+    const createData: Prisma.UserUncheckedCreateInput = { orgId: org.id, email, role: 'admin' };
+    await prisma.user.create({ data: createData });
     logger.info({ email }, 'Default admin created');
     return;
   }
 
-  if ((existing as any).role !== 'admin') {
-    await prisma.user.update({ where: { id: existing.id }, data: { role: 'admin' } as any });
+  const currentRole = (existing as { role?: string }).role;
+  if (currentRole !== 'admin') {
+    const updateData: Prisma.UserUpdateInput = { role: 'admin' };
+    await prisma.user.update({ where: { id: existing.id }, data: updateData });
     logger.info({ userId: existing.id, email }, 'Default admin promoted to admin');
   } else {
     logger.info({ userId: existing.id, email }, 'Default admin already present');

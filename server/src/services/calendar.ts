@@ -1,6 +1,7 @@
 // server/src/services/calendar.ts
 import { prisma } from '../db';
 import assert from 'node:assert';
+import type { Prisma } from '@prisma/client';
 
 export type Visibility = 'public' | 'course' | 'private';
 
@@ -90,7 +91,7 @@ export async function createEvent(input: CreateCalendarEventInput) {
 
 export async function updateEvent(id: string, patch: UpdateCalendarEventInput) {
   validateUpdate(patch);
-  const data: any = {};
+  const data: Prisma.CalendarEventUpdateInput = {};
   if (patch.title !== undefined) data.title = patch.title.trim();
   if (patch.description !== undefined) data.description = patch.description ?? null;
   if (patch.startAt !== undefined) data.startAt = new Date(patch.startAt);
