@@ -1,0 +1,9 @@
+# Proposed deletions (do not delete automatically)
+
+- server/prisma/.env
+  Reason: Prisma loads variables from both .env and prisma/.env. Having the same key (DEFAULT_ADMIN_EMAIL) in both files causes a CI failure: "There is a conflict between env var in .env and prisma/.env". Consolidate application env vars (e.g., DEFAULT_ADMIN_EMAIL) into server/.env only. Keep prisma/.env exclusively for DB-specific variables (DATABASE_URL) or remove it entirely.
+
+Remediation steps:
+1) Ensure server/.env contains: DEFAULT_ADMIN_EMAIL=<value>.
+2) Remove DEFAULT_ADMIN_EMAIL from server/prisma/.env (or delete the file).
+3) Re-run CI (Prisma generate step should pass).
