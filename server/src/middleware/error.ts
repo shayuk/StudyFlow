@@ -16,10 +16,12 @@ interface ProblemDetails {
  * Should be the last middleware in the chain (after routes).
  */
 export function errorHandler(err: unknown, req: Request, res: Response, _next: NextFunction) {
+  // Mark _next as used to satisfy no-unused-vars while preserving 4-arg signature for Express
+  void _next;
   const status = (() => {
     // honor explicit status if present on error objects we throw (e.g., { status: 400 })
-    const anyErr = err as any;
-    const s = Number(anyErr?.status);
+    const withStatus = err as { status?: number } | undefined;
+    const s = Number(withStatus?.status);
     if (Number.isInteger(s) && s >= 400 && s <= 599) return s;
     return 500;
   })();
@@ -32,7 +34,7 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
   })();
 
   // Pull a trace id if httpLogger/request-id middleware attached one
-  const traceId = (req as any).id || (req.headers['x-request-id'] as string | undefined);
+  const traceId = (req as Request & { id?: string }).id || (req.headers['x-request-id'] as string | undefined);
 
   const problem: ProblemDetails = {
     type: status >= 500 ? 'about:blank' : 'https://httpstatuses.com/' + status,

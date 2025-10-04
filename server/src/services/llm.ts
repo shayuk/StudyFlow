@@ -59,8 +59,9 @@ export async function callStudentModel(params: { text: string; context?: LlmCont
 import { logger } from '../logger';
 
 // Safely read response body for diagnostics
-async function safeReadText(resp?: any): Promise<string> {
-  try { return await resp?.text(); } catch { return '<unreadable body>'; }
+type TextReadable = { text: () => Promise<string> };
+async function safeReadText(resp?: TextReadable): Promise<string> {
+  try { return resp ? await resp.text() : '<no body>'; } catch { return '<unreadable body>'; }
 }
 
 export async function callLecturerModel(params: { text: string; context?: LlmContext; highGear?: boolean }): Promise<TextStream> {

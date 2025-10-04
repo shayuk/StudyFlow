@@ -33,7 +33,7 @@ describe.sequential('Knowledge intake routes (upload → parse → chunk)', () =
 
   beforeAll(async () => {
     await prisma.$connect();
-  });
+  }, 20000);
 
   beforeEach(async () => {
     // Clean test org data

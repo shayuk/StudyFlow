@@ -68,9 +68,9 @@ export async function search(vector: number[], filter: Record<string, unknown>, 
     const text = await resp.text().catch(() => '');
     throw new Error(`Qdrant search failed: ${resp.status} ${text}`);
   }
-  const data = (await resp.json()) as { result?: unknown };
-  const result = Array.isArray((data as any).result) ? (data as any).result : [];
-  return result as QdrantResult[];
+  interface QdrantSearchResponse { result?: QdrantResult[] }
+  const data = (await resp.json()) as QdrantSearchResponse;
+  return Array.isArray(data.result) ? data.result : [];
 }
 
 export function buildOrgFilter(orgId: string) {

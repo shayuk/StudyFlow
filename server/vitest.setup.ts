@@ -1,3 +1,4 @@
+import 'dotenv/config';
 // Server Vitest setup: enforce strict auth in tests
 process.env.DEV_AUTH_MODE = 'false';
 

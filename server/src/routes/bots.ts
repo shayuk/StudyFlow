@@ -2,6 +2,9 @@ import { Router, Response } from 'express';
 import { authMiddleware, AuthedRequest } from '../auth/middleware';
 import { requireOrg, requireAnyRole } from '../auth/authorize';
 import { prisma } from '../db';
+import { z } from 'zod';
+import { logger } from '../logger';
+import type { Prisma } from '@prisma/client';
 
 const router = Router();
 
@@ -29,15 +32,22 @@ router.get('/bots', authMiddleware, requireOrg(), async (req: AuthedRequest, res
 // Create bot (instructor/admin)
 router.post('/bots', authMiddleware, requireOrg(), requireAnyRole(['instructor', 'admin']), async (req: AuthedRequest, res: Response) => {
   const orgId = req.user!.orgId;
-  const { name, persona } = req.body ?? {};
-  if (!name || typeof name !== 'string') {
-    return res.status(400).json({ error: 'name is required (string)' });
+  const schema = z.object({
+    name: z.string().min(1, 'name is required (string)'),
+    persona: z.any().optional(),
+  });
+  const parsed = schema.safeParse(req.body ?? {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.issues[0]?.message ?? 'invalid body' });
   }
+  const { name, persona } = parsed.data as { name: string; persona?: unknown };
   try {
-    const created = await prisma.bot.create({ data: { orgId, name, persona } });
+    const created = await prisma.bot.create({ data: { orgId, name, persona: toJSONString(persona) } });
+    logger.info({ orgId, botId: created.id, route: 'POST /api/bots' }, 'Bot created');
     return res.status(201).json({ id: created.id, name: created.name, persona: created.persona });
   } catch (err: unknown) {
     const detail = err instanceof Error ? err.message : String(err);
+    logger.warn({ orgId, err: detail, route: 'POST /api/bots' }, 'Create bot failed');
     return res.status(409).json({ error: 'create bot failed', detail });
   }
 });
@@ -46,7 +56,16 @@ router.post('/bots', authMiddleware, requireOrg(), requireAnyRole(['instructor',
 router.post('/bots/:botId/versions', authMiddleware, requireOrg(), requireAnyRole(['instructor', 'admin']), async (req: AuthedRequest, res: Response) => {
   const orgId = req.user!.orgId;
   const { botId } = req.params as { botId: string };
-  const { prompts, tools, temperature } = req.body ?? {};
+  const schema = z.object({
+    prompts: z.any().optional(),
+    tools: z.any().optional(),
+    temperature: z.number().optional(),
+  });
+  const parsed = schema.safeParse(req.body ?? {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.issues[0]?.message ?? 'invalid body' });
+  }
+  const { prompts, tools, temperature } = parsed.data as { prompts?: unknown; tools?: unknown; temperature?: number };
 
   const bot = await prisma.bot.findUnique({ where: { id: botId } });
   if (!bot) return res.status(404).json({ error: 'bot not found' });
@@ -62,6 +81,7 @@ router.post('/bots/:botId/versions', authMiddleware, requireOrg(), requireAnyRol
     },
     select: { id: true, status: true, prompts: true, tools: true, temperature: true, createdAt: true },
   });
+  logger.info({ orgId, botId, versionId: created.id, route: 'POST /api/bots/:botId/versions' }, 'Bot version created');
   return res.status(201).json(created);
 });
 
@@ -69,7 +89,17 @@ router.post('/bots/:botId/versions', authMiddleware, requireOrg(), requireAnyRol
 router.patch('/bot-versions/:versionId', authMiddleware, requireOrg(), requireAnyRole(['instructor', 'admin']), async (req: AuthedRequest, res: Response) => {
   const orgId = req.user!.orgId;
   const { versionId } = req.params as { versionId: string };
-  const { status, prompts, tools, temperature } = req.body ?? {};
+  const schema = z.object({
+    status: z.enum(['draft', 'prepared', 'published', 'retired']).optional(),
+    prompts: z.any().optional(),
+    tools: z.any().optional(),
+    temperature: z.number().optional(),
+  });
+  const parsed = schema.safeParse(req.body ?? {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.issues[0]?.message ?? 'invalid body' });
+  }
+  const { status, prompts, tools, temperature } = parsed.data as { status?: string; prompts?: unknown; tools?: unknown; temperature?: number };
 
   const ver = await prisma.botVersion.findUnique({
     where: { id: versionId },
@@ -100,6 +130,7 @@ router.patch('/bot-versions/:versionId', authMiddleware, requireOrg(), requireAn
     },
     select: { id: true, status: true, prompts: true, tools: true, temperature: true, updatedAt: true },
   });
+  logger.info({ orgId, versionId: updated.id, status: updated.status, route: 'PATCH /api/bot-versions/:versionId' }, 'Bot version updated');
   return res.status(200).json(updated);
 });
 
@@ -107,11 +138,15 @@ router.patch('/bot-versions/:versionId', authMiddleware, requireOrg(), requireAn
 router.post('/bots/:botId/deploy', authMiddleware, requireOrg(), requireAnyRole(['instructor', 'admin']), async (req: AuthedRequest, res: Response) => {
   const orgId = req.user!.orgId;
   const { botId } = req.params as { botId: string };
-  const { courseId, versionId } = req.body ?? {} as { courseId?: string; versionId?: string };
-
-  if (!courseId || typeof courseId !== 'string') {
-    return res.status(400).json({ error: 'courseId is required (string)' });
+  const schema = z.object({
+    courseId: z.string().min(1, 'courseId is required (string)'),
+    versionId: z.string().optional(),
+  });
+  const parsed = schema.safeParse(req.body ?? {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.issues[0]?.message ?? 'invalid body' });
   }
+  const { courseId, versionId } = parsed.data as { courseId: string; versionId?: string };
 
   const bot = await prisma.bot.findUnique({ where: { id: botId } });
   if (!bot) return res.status(404).json({ error: 'bot not found' });
@@ -143,9 +178,11 @@ router.post('/bots/:botId/deploy', authMiddleware, requireOrg(), requireAnyRole(
       update: { versionId: version.id },
       select: { id: true, courseId: true, botId: true, versionId: true, createdAt: true },
     });
+    logger.info({ orgId, botId, courseId, versionId: version.id, route: 'POST /api/bots/:botId/deploy' }, 'Bot deployed to course');
     return res.status(200).json(inst);
   } catch (err: unknown) {
     const detail = err instanceof Error ? err.message : String(err);
+    logger.warn({ orgId, botId, courseId, err: detail, route: 'POST /api/bots/:botId/deploy' }, 'Bot deploy failed');
     return res.status(409).json({ error: 'deploy failed', detail });
   }
 });
@@ -155,7 +192,7 @@ router.get('/bot-instances', authMiddleware, requireOrg(), requireAnyRole(['inst
   const orgId = req.user!.orgId;
   const { courseId } = req.query as { courseId?: string };
 
-  const where: any = {
+  const where: Prisma.BotInstanceWhereInput = {
     ...(courseId ? { courseId } : {}),
     // ensure related records exist and restrict to caller org
     bot: { is: { orgId } },
