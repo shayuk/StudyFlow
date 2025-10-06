@@ -25,7 +25,14 @@ export async function callStudentModel(params: { text: string; context?: LlmCont
     return stringToStream(`(DEV fallback) ${text}`);
   }
   // OpenAI Responses API (stream mode)
-  const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+  type FetchResponse = {
+    ok: boolean;
+    status?: number;
+    statusText?: string;
+    body: ReadableStream<Uint8Array> | null;
+    text?: () => Promise<string>;
+  };
+  const resp = (await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -39,7 +46,7 @@ export async function callStudentModel(params: { text: string; context?: LlmCont
         { role: 'user', content: text },
       ],
     }),
-  });
+  })) as unknown as FetchResponse;
   if (!resp.ok || !resp.body) {
     return stringToStream(`(LLM error fallback) ${text}`);
   }
@@ -59,9 +66,9 @@ export async function callStudentModel(params: { text: string; context?: LlmCont
 import { logger } from '../logger';
 
 // Safely read response body for diagnostics
-type TextReadable = { text: () => Promise<string> };
+type TextReadable = { text?: () => Promise<string> };
 async function safeReadText(resp?: TextReadable): Promise<string> {
-  try { return resp ? await resp.text() : '<no body>'; } catch { return '<unreadable body>'; }
+  try { return resp?.text ? await resp.text() : '<no body>'; } catch { return '<unreadable body>'; }
 }
 
 export async function callLecturerModel(params: { text: string; context?: LlmContext; highGear?: boolean }): Promise<TextStream> {
@@ -84,7 +91,7 @@ export async function callLecturerModel(params: { text: string; context?: LlmCon
   const baseDelayMs = 300;
   for (let i = 0; i < attempts; i++) {
     try {
-      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      const resp = (await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -99,7 +106,7 @@ export async function callLecturerModel(params: { text: string; context?: LlmCon
             { role: 'user', content: text },
           ],
         }),
-      });
+      })) as unknown as { ok: boolean; status: number; statusText?: string; body: ReadableStream<Uint8Array> | null; text?: () => Promise<string> };
       if (!resp.ok || !resp.body) {
         // Retry only on transient errors (429 / 5xx). Otherwise break to glide/fallback.
         const transient = resp.status === 429 || (resp.status >= 500 && resp.status <= 599);
