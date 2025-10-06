@@ -19,11 +19,19 @@ export interface QdrantResult {
   payload?: Record<string, unknown>;
 }
 
+// טיפוס תגובה מצומצם שמתאים למה שאנחנו צריכים, ללא תלות ב-DOM Response
+type FetchRespMini = {
+  ok: boolean;
+  status: number;
+  text: () => Promise<string>;
+  json: () => Promise<unknown>;
+};
+
 // עטיפת fetch שמזריקה כותרת api-key אוטומטית ושומרת על שאר ההגדרות
-function qdrantFetch(path: string, init: RequestInit = {}) {
+function qdrantFetch(path: string, init: any = {}) {
   // נבנה אובייקט כותרות פשוט כדי להימנע מסוגי DOM כמו Headers/HeadersInit
   const outHeaders: Record<string, string> = {};
-  const src = init.headers as unknown;
+  const src = init?.headers as unknown;
   if (src && typeof src === 'object' && !Array.isArray(src)) {
     for (const [k, v] of Object.entries(src as Record<string, unknown>)) {
       outHeaders[String(k)] = String(v as unknown as string);
@@ -36,8 +44,7 @@ function qdrantFetch(path: string, init: RequestInit = {}) {
     // לחלופין:
     // outHeaders['Authorization'] = `Bearer ${QDRANT_API_KEY}`;
   }
-
-  return fetch(`${QDRANT_URL}${path}`, { ...init, headers: outHeaders });
+  return fetch(`${QDRANT_URL}${path}`, { ...(init || {}), headers: outHeaders }) as unknown as Promise<FetchRespMini>;
 }
 
 export async function ensureCollection(): Promise<void> {
