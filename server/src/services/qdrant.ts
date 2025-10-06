@@ -1,7 +1,11 @@
+// server/src/services/qdrant.ts
+// גרסה מינימלית תואמת-קוד קיים + תמיכה ב-QDRANT_API_KEY לכל בקשה
+
 import { EMBEDDING_DIM } from './embeddings';
 
-const QDRANT_URL = process.env.QDRANT_URL || 'http://127.0.0.1:6333';
+const QDRANT_URL = (process.env.QDRANT_URL || 'http://127.0.0.1:6333').replace(/\/+$/, '');
 const COLLECTION = process.env.QDRANT_COLLECTION || 'studyflow_chunks';
+const QDRANT_API_KEY = process.env.QDRANT_API_KEY || ''; // NEW: מפתח ל-Qdrant Cloud
 
 export interface QdrantPoint {
   id: string;
@@ -9,14 +13,40 @@ export interface QdrantPoint {
   payload: Record<string, unknown>;
 }
 
-export async function ensureCollection(): Promise<void> {
-  const url = `${QDRANT_URL}/collections/${encodeURIComponent(COLLECTION)}`;
-  const resp = await fetch(url);
-  if (resp.ok) {
-    return;
+export interface QdrantResult {
+  id: string | number;
+  score: number;
+  payload?: Record<string, unknown>;
+}
+
+// עטיפת fetch שמזריקה כותרת api-key אוטומטית ושומרת על שאר ההגדרות
+function qdrantFetch(path: string, init: RequestInit = {}) {
+  // נבנה אובייקט כותרות פשוט כדי להימנע מסוגי DOM כמו Headers/HeadersInit
+  const outHeaders: Record<string, string> = {};
+  const src = init.headers as unknown;
+  if (src && typeof src === 'object' && !Array.isArray(src)) {
+    for (const [k, v] of Object.entries(src as Record<string, unknown>)) {
+      outHeaders[String(k)] = String(v as unknown as string);
+    }
   }
-  // create
-  const create = await fetch(`${QDRANT_URL}/collections/${encodeURIComponent(COLLECTION)}`, {
+
+  // הזרקת api-key אם מוגדר
+  if (QDRANT_API_KEY) {
+    outHeaders['api-key'] = QDRANT_API_KEY;
+    // לחלופין:
+    // outHeaders['Authorization'] = `Bearer ${QDRANT_API_KEY}`;
+  }
+
+  return fetch(`${QDRANT_URL}${path}`, { ...init, headers: outHeaders });
+}
+
+export async function ensureCollection(): Promise<void> {
+  const path = `/collections/${encodeURIComponent(COLLECTION)}`;
+  const resp = await qdrantFetch(path); // GET
+  if (resp.ok) return;
+
+  // create if not exists
+  const create = await qdrantFetch(path, {
     method: 'PUT',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
@@ -34,8 +64,8 @@ export async function ensureCollection(): Promise<void> {
 
 export async function upsertChunks(points: QdrantPoint[]): Promise<void> {
   if (!points.length) return;
-  const url = `${QDRANT_URL}/collections/${encodeURIComponent(COLLECTION)}/points?wait=true`;
-  const resp = await fetch(url, {
+  const path = `/collections/${encodeURIComponent(COLLECTION)}/points?wait=true`;
+  const resp = await qdrantFetch(path, {
     method: 'PUT',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ points }),
@@ -46,15 +76,13 @@ export async function upsertChunks(points: QdrantPoint[]): Promise<void> {
   }
 }
 
-export interface QdrantResult {
-  id: string | number;
-  score: number;
-  payload?: Record<string, unknown>;
-}
-
-export async function search(vector: number[], filter: Record<string, unknown>, limit = 5): Promise<QdrantResult[]> {
-  const url = `${QDRANT_URL}/collections/${encodeURIComponent(COLLECTION)}/points/search`;
-  const resp = await fetch(url, {
+export async function search(
+  vector: number[],
+  filter: Record<string, unknown>,
+  limit = 5
+): Promise<QdrantResult[]> {
+  const path = `/collections/${encodeURIComponent(COLLECTION)}/points/search`;
+  const resp = await qdrantFetch(path, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
@@ -75,8 +103,6 @@ export async function search(vector: number[], filter: Record<string, unknown>, 
 
 export function buildOrgFilter(orgId: string) {
   return {
-    must: [
-      { key: 'orgId', match: { value: orgId } },
-    ],
+    must: [{ key: 'orgId', match: { value: orgId } }],
   };
 }
