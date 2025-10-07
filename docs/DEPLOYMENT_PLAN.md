@@ -29,6 +29,23 @@ This document summarizes our final deployment approach for Frontend (Firebase Ho
 - Sign up to Vercel (GitHub SSO), import repo `shayuk/StudyFlow`.
 - Framework: Node/Express. Output: Serverless functions (or Node server if configured).
 
+### Runtime & Toolchain
+- Node version is enforced via `package.json` → `"engines": { "node": "20.x" }`.
+- Package manager is pnpm. We do not commit `package-lock.json`; CI should respect `pnpm-lock.yaml`.
+
+### Routing config (minimal vercel.json)
+Do not pin `functions.runtime`. Use minimal routes:
+
+```json
+{
+  "version": 2,
+  "routes": [
+    { "src": "/api/(.*)", "dest": "server/api/index.ts" },
+    { "src": "/docs/(.*)", "dest": "server/api/index.ts" }
+  ]
+}
+```
+
 ### 2) Environment Variables (Vercel → Project → Settings → Environment Variables)
 - Store only secrets here (JWT keys, DB URLs, third-party API keys). Do not expose to frontend.
 - After changes, trigger Redeploy.
@@ -88,6 +105,12 @@ app.use(cors({
 - GitHub Secrets: set `STAGING_BASE_URL` to the staging UI URL (or API if workflow expects it per docs).
 - E2E smoke workflow triggers on PR/Push. Uses `STAGING_BASE_URL`.
 - Keep PRs small; rely on `.github/pull_request_template.md` and `docs/DoD.md`.
+
+---
+
+## Toolchain Notes
+- Node 20.x required on CI/CD (Vercel honors `engines.node`).
+- pnpm is the package manager; avoid `npm install` to prevent creating `package-lock.json`.
 
 ---
 

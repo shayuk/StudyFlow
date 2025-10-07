@@ -24,6 +24,11 @@ StudyFlow is a comprehensive platform designed to streamline the educational pro
 - **UI Components:** Shadcn UI, FullCalendar
 - **Linting:** ESLint
 
+## Requirements
+
+- **Node.js**: 20.x (enforced via `package.json` → `"engines": { "node": "20.x" }`).
+- **Package manager**: pnpm. Do not use npm/yarn (avoid creating `package-lock.json`/`yarn.lock`).
+
 ## Conventions
 
 - **Package manager:** PNPM only
