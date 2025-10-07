@@ -4,16 +4,17 @@
     "target": "ES2022",
     "useDefineForClassFields": true,
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "module": "NodeNext",
+
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
     "skipLibCheck": true,
 
-    /* Bundler mode */
-    "moduleResolution": "NodeNext",
+    /* נשמרים כמו אצלך */
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
     "noEmit": true,
-    "jsx": "react-jsx",
 
     /* Linting */
     "strict": true,
@@ -22,9 +23,15 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
+
+    /* alias ל-@ + בסיס */
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
-    }
+      "@/*": ["src/*"]
+    },
+
+    /* types של Vite */
+    "types": ["vite/client"]
   },
-  "include": ["src", "src/vite-env.d.ts", "vite.config.ts"]
+  "include": ["src", "src/vite-env.d.ts"]
 }

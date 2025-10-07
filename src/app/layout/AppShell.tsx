@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Send, Maximize2, Minus } from 'lucide-react';
 import { Navbar } from './Navbar';
+import { useAuth } from '@/hooks/useAuth';
 
 const ChatWidget = () => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -12,9 +13,12 @@ const ChatWidget = () => {
 
   return (
     <div className={containerClasses}>
-      <header className="bg-primary text-white p-3 flex justify-between items-center rounded-t-lg cursor-pointer" onClick={() => !isExpanded && setIsExpanded(true)}>
+      <header
+        className="bg-primary text-white p-3 flex justify-between items-center rounded-t-lg cursor-pointer"
+        onClick={() => !isExpanded && setIsExpanded(true)}
+      >
         <h3 className="font-bold">StudyFlow Bot</h3>
-        <button 
+        <button
           onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}
           className="hover:bg-primary-dark p-1 rounded-full"
         >
@@ -42,15 +46,14 @@ const ChatWidget = () => {
 };
 
 export const AppShell = () => {
-  return (
-    // Using bg-background defined in tailwind.config.js
-    <div className="min-h-screen bg-background">
-      <Navbar />
+  const user = useAuth(state => state.user);
 
-      {/* Main Content Area */}
+  return (
+    <div className="min-h-screen bg-background">
+      <Navbar user={user} />
+
       <main className="py-8">
         <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-          {/* The content of each page will be rendered here */}
           <Outlet />
         </div>
       </main>
