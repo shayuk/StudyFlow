@@ -5,3 +5,4 @@
     { "src": "/docs/(.*)", "dest": "server/api/index.ts" }
   ]
 }
+
