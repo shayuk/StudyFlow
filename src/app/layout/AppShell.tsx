@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Send, Maximize2, Minus } from 'lucide-react';
 import { Navbar } from './Navbar';
+// אם יש לך hook של הזדהות (למשל useAuth) אפשר בעתיד להחליף את null במשתמש בפועל:
+// import { useAuth } from '@/hooks/useAuth';
 
 const ChatWidget = () => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -12,9 +14,12 @@ const ChatWidget = () => {
 
   return (
     <div className={containerClasses}>
-      <header className="bg-primary text-white p-3 flex justify-between items-center rounded-t-lg cursor-pointer" onClick={() => !isExpanded && setIsExpanded(true)}>
+      <header
+        className="bg-primary text-white p-3 flex justify-between items-center rounded-t-lg cursor-pointer"
+        onClick={() => !isExpanded && setIsExpanded(true)}
+      >
         <h3 className="font-bold">StudyFlow Bot</h3>
-        <button 
+        <button
           onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}
           className="hover:bg-primary-dark p-1 rounded-full"
         >
@@ -42,10 +47,13 @@ const ChatWidget = () => {
 };
 
 export const AppShell = () => {
+  // אם קיים hook: const user = useAuth(state => state.user);
   return (
     // Using bg-background defined in tailwind.config.js
     <div className="min-h-screen bg-background">
-      <Navbar />
+      {/* הוספת הפרופס החסר כדי להתאים ל-NavigationProps */}
+      <Navbar user={null} />
+      {/* אם יש לך user אמיתי: <Navbar user={user} /> */}
 
       {/* Main Content Area */}
       <main className="py-8">
