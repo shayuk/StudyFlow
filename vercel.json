@@ -1,17 +1,21 @@
 {
   "version": 2,
+  "buildCommand": "pnpm -C server build",
   "builds": [
     {
       "src": "server/api/index.ts",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": ["docs/api/**"]
+        "includeFiles": [
+          "server/dist/**",
+          "docs/api/**"
+        ]
       }
     }
   ],
   "routes": [
     { "src": "/api/(.*)", "dest": "server/api/index.ts" },
     { "src": "/docs/(.*)", "dest": "server/api/index.ts" },
-    { "src": "/health",    "dest": "server/api/index.ts" }
+    { "src": "/health",   "dest": "server/api/index.ts" }
   ]
 }
