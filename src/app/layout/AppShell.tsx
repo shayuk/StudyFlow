@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Send, Maximize2, Minus } from 'lucide-react';
 import { Navbar } from './Navbar';
-// אם יש לך hook של הזדהות (למשל useAuth) אפשר בעתיד להחליף את null במשתמש בפועל:
-// import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 
 const ChatWidget = () => {
   const [isExpanded, setIsExpanded] = useState(false);
