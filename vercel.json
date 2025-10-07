@@ -6,6 +6,7 @@
       "src": "server/api/index.ts",
       "use": "@vercel/node",
       "config": {
+        "runtime": "nodejs20.x",
         "includeFiles": [
           "server/dist/**",
           "docs/api/**"
