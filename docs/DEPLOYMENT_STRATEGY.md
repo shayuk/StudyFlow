@@ -4,6 +4,13 @@ This document contains concrete, copy-paste ready snippets for CORS, SSE, helmet
 
 ---
 
+## 0) Toolchain (CI/CD)
+
+- Node: 20.x (enforced via `package.json` → `"engines": { "node": "20.x" }`).
+- Package manager: pnpm. Do not commit `package-lock.json` (use `pnpm-lock.yaml`).
+
+---
+
 ## 1) CORS — focused allowlist
 File: `server/src/index.ts` (or a dedicated `CORS.ts`)
 ```ts

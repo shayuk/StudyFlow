@@ -14,7 +14,6 @@ This document defines the backend vision, scope, and local-first plan for StudyF
 ## Local Tech Stack (phase A)
 - Runtime: Node.js (TypeScript)
 - Framework: Express (simple, fast to MVP; can graduate to NestJS later if needed)
-- Auth: Local JWT (HS256) with roles and org/course scoping. (Firebase/Auth will be introduced only when we leave local-only mode.)
 - DB: SQLite via Prisma (single file, easy to version/control in repo). Can migrate to PostgreSQL later with minimal changes.
 - Vector DB (RAG): Qdrant (local Docker). We’ll gate RAG features until Qdrant is available locally.
 - File Storage: Local `storage/` folder. (No cloud buckets.)
@@ -23,10 +22,13 @@ This document defines the backend vision, scope, and local-first plan for StudyF
 - Logging: JSON structured logs to console and local file `logs/app.log`.
 - Tests: Vitest for unit/integration. No external mocks for dev; test doubles only for tests.
 
+### Tooling & Versions
+
+- Node.js: 20.x (enforced via `package.json` → `"engines": { "node": "20.x" }`).
+- Package manager: pnpm. We do not use `package-lock.json` (removed to prevent CI conflicts); rely on `pnpm-lock.yaml`.
+- Storybook/TypeScript: declare CSS modules via `.storybook/types.d.ts` with `declare module '*.css';` to avoid type errors in CI/build.
+
 ### בדיקת קובץ לוגים (CMD)
-
-להלן פקודות קצרות לבדיקת קובץ הלוגים ב־Windows CMD:
-
 ```cmd
 if exist logs\app.log (echo קיים) else (echo לא קיים)
 type logs\app.log
@@ -189,6 +191,23 @@ pnpm run backend:prisma:generate
 pnpm run backend:build
 pnpm run backend:start
 ```
+
+### Vercel notes (runtime & routing)
+
+- Node runtime: Vercel will use Node 20 according to the repo `engines` field.
+- `vercel.json` is minimal and routes traffic to the API handler without pinning a functions runtime:
+
+```json
+{
+  "version": 2,
+  "routes": [
+    { "src": "/api/(.*)", "dest": "server/api/index.ts" },
+    { "src": "/docs/(.*)", "dest": "server/api/index.ts" }
+  ]
+}
+```
+
+- Do not set `functions.runtime` in `vercel.json`; rely on platform defaults + `engines`.
 
 ### Seed data (idempotent)
 Use a tiny dataset suitable for smoke tests (org, admin user, 1–2 courses):
