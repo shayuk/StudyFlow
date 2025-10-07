@@ -19,8 +19,8 @@ This document defines the backend vision, scope, and local-first plan for StudyF
 - File Storage: Local `storage/` folder. (No cloud buckets.)
 - Background jobs: Simple in-process queue to start (BullMQ/Redis optional later when needed).
 - API schema: REST + SSE. OpenAPI contract in `docs/api/openapi.yaml` (to be created when endpoints are stubbed).
- - Logging: JSON structured logs to console and local file `logs/app.log`.
- - Tests: Vitest for unit/integration. No external mocks for dev; test doubles only for tests.
+- Logging: JSON structured logs to console and local file `logs/app.log`.
+- Tests: Vitest for unit/integration. No external mocks for dev; test doubles only for tests.
 
 ### Tooling & Versions
 
