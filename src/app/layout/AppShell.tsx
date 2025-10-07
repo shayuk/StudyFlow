@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Send, Maximize2, Minus } from 'lucide-react';
 import { Navbar } from './Navbar';
-// אם יש לך hook של הזדהות (למשל useAuth) אפשר בעתיד להחליף את null במשתמש בפועל:
-// import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 
 const ChatWidget = () => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -47,18 +46,14 @@ const ChatWidget = () => {
 };
 
 export const AppShell = () => {
-  // אם קיים hook: const user = useAuth(state => state.user);
-  return (
-    // Using bg-background defined in tailwind.config.js
-    <div className="min-h-screen bg-background">
-      {/* הוספת הפרופס החסר כדי להתאים ל-NavigationProps */}
-      <Navbar user={null} />
-      {/* אם יש לך user אמיתי: <Navbar user={user} /> */}
+  const user = useAuth(state => state.user);
 
-      {/* Main Content Area */}
+  return (
+    <div className="min-h-screen bg-background">
+      <Navbar user={user} />
+
       <main className="py-8">
         <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-          {/* The content of each page will be rendered here */}
           <Outlet />
         </div>
       </main>

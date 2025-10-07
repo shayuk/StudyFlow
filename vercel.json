@@ -20,3 +20,4 @@
     { "src": "/health",   "dest": "server/api/index.ts" }
   ]
 }
+
