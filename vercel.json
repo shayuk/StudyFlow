@@ -1,19 +1,5 @@
 {
   "version": 2,
-  "buildCommand": "pnpm -C server build",
-  "builds": [
-    {
-      "src": "server/api/index.ts",
-      "use": "@vercel/node",
-      "config": {
-        "runtime": "nodejs20.x",
-        "includeFiles": [
-          "server/dist/**",
-          "docs/api/**"
-        ]
-      }
-    }
-  ],
   "routes": [
     { "src": "/api/(.*)", "dest": "server/api/index.ts" },
     { "src": "/docs/(.*)", "dest": "server/api/index.ts" },
