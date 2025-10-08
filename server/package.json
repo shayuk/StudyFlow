@@ -8,9 +8,9 @@
     "start": "cross-env NODE_ENV=production node dist/local.js",
     "build": "tsc -p tsconfig.json",
     "docs:sync-openapi": "npx -y @redocly/cli@latest bundle ../docs/api/openapi.yaml -o ../docs/api/openapi.json --ext json",
-    "postinstall": "prisma generate --schema=server/prisma/schema.prisma"
+    "postinstall": "prisma generate --schema=prisma/schema.prisma"
   },
-  "prisma": { "schema": "server/prisma/schema.prisma" },
+  "prisma": { "schema": "prisma/schema.prisma" },
   "dependencies": {
     "@prisma/client": "^6.15.0",
     "dotenv": "^16.4.5",
