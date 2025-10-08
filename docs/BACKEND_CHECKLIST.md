@@ -72,9 +72,10 @@ Note: Qdrant usage is gated by env. In local/test it may be disabled with `QDRAN
 - [x] Tests on seeded data.
 
 ## 10) Calendar (ReadOnly — Optional after Core)
-- [x] Provider interface and Google/Microsoft stub adapters (local only).
-- [x] GET `/calendar/freebusy` from cached demo data (no OAuth yet).
-- [x] Planner integrates free/busy windows.
+- [x] Local app calendar events API (CRUD + list by range) under `/api/calendar/events`.
+- [ ] Provider interface and Google/Microsoft stub adapters (local only).
+- [ ] GET `/calendar/freebusy` from cached demo data (no OAuth yet).
+- [ ] Planner integrates free/busy windows.
 
 ## 11) Quality & Ops
 - [x] Centralized error handler (problem+json) wired as last middleware.
@@ -84,40 +85,28 @@ Note: Qdrant usage is gated by env. In local/test it may be disabled with `QDRAN
 - [x] OpenAPI spec in `docs/api/openapi.yaml` reflecting implemented routes.
 - [x] Swagger UI available at `/docs` (serves `docs/api/openapi.json`, synced from `docs/api/openapi.yaml`); URL logged on startup.
 
+## 12) DX & Scripts (CMD)
 - [x] `pnpm run backend:dev` — start server with nodemon/ts-node.
 - [x] `pnpm run backend:test` — Vitest.
 - [x] `pnpm run backend:seed` — seed demo org/users/courses.
 - [x] `pnpm run backend:lint` — ESLint (clean; warnings only from generated `server/coverage/`).
 - [x] E2E Smoke workflow configured in `.github/workflows/e2e.yml` (gated by `STAGING_BASE_URL`).
-- [x] Document where to set `STAGING_BASE_URL` (repo secrets) and how to run locally with `BASE_URL`.
-- [x] Local E2E run: `set BASE_URL=http://localhost:5173 && pnpm run e2e:smoke` (CMD).
-- [x] Upload Playwright report as artifact in E2E workflow (optional).
+- [ ] Document where to set `STAGING_BASE_URL` (repo secrets) and how to run locally with `BASE_URL`.
+- [ ] Local E2E run: `set BASE_URL=http://localhost:5173 && pnpm run e2e:smoke` (CMD).
+- [ ] Upload Playwright report as artifact in E2E workflow (optional).
 
 ## Done Criteria for Phase A (Local MVP)
-- [x] All routes above functional locally and tested.
-- [x] Planner produces sessions; chat streams SSE mock.
+- [ ] All routes above functional locally and tested.
+- [ ] Planner produces sessions; chat streams SSE mock.
 - [x] Knowledge pipeline parses and chunks documents.
-- [x] Consistent error tests added (400/401/403/404/409 where applicable).
-{{ ... }}
+- [ ] No changes made to frontend without approval.
+
+---
+
+Status is tracked in this file and via tasks. Commit frequently and keep changes isolated per file as per project rules.
 
 ---
 
 ## Next Step (planned)
-- Proceed with Section 11: Quality & Ops — request validation (zod) with 400 errors, basic per‑IP rate limit (local/test), structured logs to `logs/app.log`, and minimal OpenAPI spec in `docs/api/openapi.yaml`.
-
----
-
-## Follow-up Tasks (Non‑Blocking)
-- [ ] Set `STAGING_BASE_URL` in GitHub repository secrets after staging frontend is deployed (see `docs/BACKEND_README.md` → CI integration for staging E2E).
-
----
-
-## Default Admin seeding
-- Configure `DEFAULT_ADMIN_EMAIL` in environment files:
-  - `server/.env.local` (dev)
-  - `server/.env.staging` (staging)
-  - production env/secret store
-- On server startup, `ensureDefaultAdmin()` will:
-  - Create a default Org if none exists
-  - Create a user with that email as `admin` if missing
-  - Promote existing user with that email to `admin` if needed
+- Focus on Section 10 (Calendar): provider adapters and `/calendar/freebusy` (cached demo), then integrate free/busy into Planner.
+- Complete Section 12 pending DX/E2E items: `STAGING_BASE_URL` docs, local `BASE_URL` example, and optional Playwright report artifact.

@@ -100,6 +100,12 @@ Exact schema will be captured in Prisma and `docs/schema.prisma.md`.
 - Planner
   - POST `/api/planner/plan`
   - POST `/api/planner/commit` (optional calendar write)
+- Calendar (Local app events)
+  - GET  `/api/calendar/events` (list by courseId and date range)
+  - POST `/api/calendar/events` (create)
+  - GET  `/api/calendar/events/{id}` (read)
+  - PATCH `/api/calendar/events/{id}` (update)
+  - DELETE `/api/calendar/events/{id}` (delete)
 - Analytics & Reports
   - GET `/api/analytics/course/:courseId`
   - GET `/api/analytics/bot/:botId`
@@ -149,8 +155,8 @@ docker run -p 6333:6333 -v %cd%/qdrant_storage:/qdrant/storage qdrant/qdrant:lat
 ---
 
 ## Status
-- Current: Backend scaffold under `server/` with AuthN/Z (Local JWT). Core domains (orgs/users/courses) and Bots routes are implemented and tested. Knowledge intake (upload → parse → chunk) and RAG search (Qdrant gated) are implemented and tested. Chat SSE stub works with citations. Planner is implemented and tested: `POST /api/planner/plan` generates sessions with conflict detection and persists `Plan` + `PlanSession`.
-- Next Step: Analytics (Basics) — aggregates for course/bot/TA and a minimal `GET /api/analytics/course/:courseId` with tests.
+- Current: Backend scaffold under `server/` with AuthN/Z (Local JWT). Core domains (orgs/users/courses) and Bots routes are implemented and tested. Knowledge intake (upload → parse → chunk) and RAG search (Qdrant gated) are implemented and tested. Chat SSE stub works with citations. Planner is implemented and tested: `POST /api/planner/plan` generates sessions with conflict detection and persists `Plan` + `PlanSession`. Calendar events API is implemented locally (`/api/calendar/events`: CRUD + list by range).
+- Next Step: Calendar providers (stub adapters), `/calendar/freebusy` (cached demo, no OAuth), and integrate free/busy into Planner. Then complete DX/E2E docs for `STAGING_BASE_URL` and local `BASE_URL` example.
 
 ---
 

@@ -3,16 +3,12 @@
   "info": {
     "title": "StudyFlow Local API (Draft)",
     "version": "0.1.0",
-    "description": "Draft OpenAPI spec for the local backend. Scope is limited to core routes\nimplemented under `server/src/routes/`. This spec will evolve and expand.\n",
-    "license": {
-      "name": "MIT",
-      "url": "https://opensource.org/licenses/MIT"
-    }
+    "description": "Draft OpenAPI spec for the local backend. Scope is limited to core routes\nimplemented under `server/src/routes/`. This spec will evolve and expand.\n"
   },
   "servers": [
     {
-      "url": "https://api.studyflow.local",
-      "description": "Local or staging gateway"
+      "url": "http://localhost:4000",
+      "description": "Local dev"
     }
   ],
   "security": [
@@ -22,36 +18,28 @@
   ],
   "tags": [
     {
-      "name": "Health",
-      "description": "Basic health and identity endpoints"
+      "name": "Health"
     },
     {
-      "name": "Courses",
-      "description": "Course CRUD endpoints scoped by organization"
+      "name": "Courses"
     },
     {
-      "name": "Chat",
-      "description": "Chat conversations and messages (SSE capable)"
+      "name": "Chat"
     },
     {
-      "name": "Knowledge",
-      "description": "Knowledge intake, documents, and search APIs"
+      "name": "Knowledge"
     },
     {
-      "name": "Planner",
-      "description": "Study session planner endpoints"
+      "name": "Planner"
     },
     {
-      "name": "Progress",
-      "description": "Mastery and progress endpoints"
+      "name": "Progress"
     },
     {
-      "name": "Analytics",
-      "description": "Analytics and aggregates for courses"
+      "name": "Analytics"
     },
     {
-      "name": "Calendar",
-      "description": "Calendar adapters and free/busy endpoints"
+      "name": "Calendar"
     }
   ],
   "paths": {
@@ -61,13 +49,9 @@
         "tags": [
           "Health"
         ],
-        "operationId": "healthCheck",
         "responses": {
           "200": {
             "description": "OK"
-          },
-          "429": {
-            "$ref": "#/components/responses/TooManyRequests"
           }
         }
       }
@@ -83,7 +67,6 @@
             "bearerAuth": []
           }
         ],
-        "operationId": "listCourses",
         "responses": {
           "200": {
             "description": "OK",
@@ -141,7 +124,6 @@
             "bearerAuth": []
           }
         ],
-        "operationId": "createCourse",
         "requestBody": {
           "required": true,
           "content": {
@@ -209,7 +191,6 @@
             "bearerAuth": []
           }
         ],
-        "operationId": "updateCourse",
         "parameters": [
           {
             "name": "courseId",
@@ -260,11 +241,20 @@
           "400": {
             "$ref": "#/components/responses/ValidationError"
           },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
           "403": {
             "description": "Forbidden"
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": "Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
           }
         }
       },
@@ -278,7 +268,6 @@
             "bearerAuth": []
           }
         ],
-        "operationId": "deleteCourse",
         "parameters": [
           {
             "name": "courseId",
@@ -311,99 +300,6 @@
         }
       }
     },
-    "/api/calendar/freebusy": {
-      "get": {
-        "summary": "Get demo free/busy windows (cached, no OAuth)",
-        "description": "Local-only demo endpoint that returns busy windows for the current user in the given range. Intended for planner integration. Real providers will be added later.",
-        "tags": [
-          "Calendar"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "operationId": "getFreeBusy",
-        "parameters": [
-          {
-            "name": "from",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            }
-          },
-          {
-            "name": "to",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "items": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "start": {
-                            "type": "string",
-                            "format": "date-time"
-                          },
-                          "end": {
-                            "type": "string",
-                            "format": "date-time"
-                          }
-                        }
-                      }
-                    }
-                  }
-                },
-                "examples": {
-                  "sample": {
-                    "value": {
-                      "items": [
-                        {
-                          "start": "2025-09-22T12:00:00.000Z",
-                          "end": "2025-09-22T13:00:00.000Z"
-                        },
-                        {
-                          "start": "2025-09-22T16:00:00.000Z",
-                          "end": "2025-09-22T17:00:00.000Z"
-                        }
-                      ]
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/ValidationError"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "429": {
-            "$ref": "#/components/responses/TooManyRequests"
-          }
-        }
-      }
-    },
     "/api/chat/start": {
       "post": {
         "summary": "Start a conversation",
@@ -415,7 +311,6 @@
             "bearerAuth": []
           }
         ],
-        "operationId": "startConversation",
         "requestBody": {
           "required": true,
           "content": {
@@ -487,7 +382,6 @@
             "bearerAuth": []
           }
         ],
-        "operationId": "postMessage",
         "parameters": [
           {
             "name": "conversationId",
@@ -577,7 +471,6 @@
             "bearerAuth": []
           }
         ],
-        "operationId": "listMessages",
         "parameters": [
           {
             "name": "conversationId",
@@ -655,7 +548,6 @@
             "bearerAuth": []
           }
         ],
-        "operationId": "createKnowledgeSource",
         "requestBody": {
           "required": true,
           "content": {
@@ -722,7 +614,6 @@
             "bearerAuth": []
           }
         ],
-        "operationId": "uploadKnowledgeDocument",
         "requestBody": {
           "required": true,
           "content": {
@@ -786,7 +677,6 @@
             "bearerAuth": []
           }
         ],
-        "operationId": "getKnowledgeDocument",
         "parameters": [
           {
             "name": "id",
@@ -834,7 +724,6 @@
             "bearerAuth": []
           }
         ],
-        "operationId": "searchKnowledge",
         "parameters": [
           {
             "name": "q",
@@ -892,7 +781,6 @@
             "bearerAuth": []
           }
         ],
-        "operationId": "generatePlan",
         "requestBody": {
           "required": true,
           "content": {
@@ -1024,7 +912,6 @@
             "bearerAuth": []
           }
         ],
-        "operationId": "getStudentProgress",
         "parameters": [
           {
             "name": "courseId",
@@ -1080,7 +967,6 @@
             "bearerAuth": []
           }
         ],
-        "operationId": "upsertSelfReport",
         "requestBody": {
           "required": true,
           "content": {
@@ -1158,7 +1044,6 @@
             "bearerAuth": []
           }
         ],
-        "operationId": "getCourseAnalytics",
         "parameters": [
           {
             "name": "courseId",
@@ -1219,7 +1104,6 @@
             "bearerAuth": []
           }
         ],
-        "operationId": "getMe",
         "responses": {
           "200": {
             "description": "OK",
@@ -1242,6 +1126,258 @@
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequests"
+          }
+        }
+      }
+    },
+    "/api/calendar/events": {
+      "get": {
+        "summary": "List calendar events by courseId and range",
+        "tags": [
+          "Calendar"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CalendarEvent"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create calendar event (instructor/admin)",
+        "tags": [
+          "Calendar"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CalendarEventCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarEvent"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/calendar/events/{id}": {
+      "get": {
+        "summary": "Get calendar event by id",
+        "tags": [
+          "Calendar"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarEvent"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update calendar event (instructor/admin)",
+        "tags": [
+          "Calendar"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CalendarEventUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarEvent"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete calendar event (instructor/admin)",
+        "tags": [
+          "Calendar"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
         }
       }
@@ -1353,10 +1489,8 @@
             "type": "string"
           },
           "code": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -1375,10 +1509,8 @@
             "type": "string"
           },
           "code": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "createdAt": {
             "type": "string",
@@ -1435,16 +1567,12 @@
             "type": "string"
           },
           "pageId": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "courseId": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": "string",
+            "nullable": true
           }
         }
       },
@@ -1512,16 +1640,12 @@
             "type": "string"
           },
           "pageId": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "courseId": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "createdAt": {
             "type": "string",
@@ -1564,10 +1688,8 @@
             "type": "string"
           },
           "meta": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "createdAt": {
             "type": "string",
@@ -1620,10 +1742,8 @@
             "type": "string"
           },
           "error": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "createdAt": {
             "type": "string",
@@ -1714,11 +1834,9 @@
             ]
           },
           "lastActivity": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           }
         },
         "required": [
@@ -1739,16 +1857,12 @@
             "format": "date-time"
           },
           "topic": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "description": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "status": {
             "type": "string"
@@ -1791,6 +1905,145 @@
           },
           "instance": {
             "type": "string"
+          }
+        }
+      },
+      "CalendarEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "courseId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "startAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "recurrenceRule": {
+            "type": "string",
+            "nullable": true
+          },
+          "location": {
+            "type": "string",
+            "nullable": true
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "public",
+              "course",
+              "private"
+            ]
+          },
+          "ownerUserId": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CalendarEventCreate": {
+        "type": "object",
+        "properties": {
+          "courseId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "startAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "recurrenceRule": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "public",
+              "course",
+              "private"
+            ]
+          }
+        },
+        "required": [
+          "courseId",
+          "title",
+          "startAt",
+          "endAt",
+          "timezone"
+        ]
+      },
+      "CalendarEventUpdate": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "startAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "recurrenceRule": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "public",
+              "course",
+              "private"
+            ]
           }
         }
       }
