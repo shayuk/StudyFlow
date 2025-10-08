@@ -5,33 +5,20 @@ info:
   description: |
     Draft OpenAPI spec for the local backend. Scope is limited to core routes
     implemented under `server/src/routes/`. This spec will evolve and expand.
-  license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
 servers:
-  - url: https://api.studyflow.local
-    description: Local or staging gateway
+  - url: http://localhost:4000
+    description: Local dev
 security:
   - bearerAuth: []
 tags:
   - name: Health
-    description: Basic health and identity endpoints
   - name: Courses
-    description: Course CRUD endpoints scoped by organization
   - name: Chat
-    description: Chat conversations and messages (SSE capable)
   - name: Knowledge
-    description: Knowledge intake, documents, and search APIs
   - name: Planner
-    description: Study session planner endpoints
   - name: Progress
-    description: Mastery and progress endpoints
   - name: Analytics
-    description: Analytics and aggregates for courses
   - name: Calendar
-    description: Calendar adapters and free/busy endpoints
-  - name: Bots
-    description: Bot management, versions and deployments
 components:
   securitySchemes:
     bearerAuth:
@@ -98,8 +85,7 @@ components:
       properties:
         id: { type: string }
         name: { type: string }
-        code:
-          type: [string, 'null']
+        code: { type: string, nullable: true }
       required: [id, name]
     CourseListItem:
       description: Course item as returned in list endpoints (includes createdAt)
@@ -107,8 +93,7 @@ components:
       properties:
         id: { type: string }
         name: { type: string }
-        code:
-          type: [string, 'null']
+        code: { type: string, nullable: true }
         createdAt: { type: string, format: date-time }
       required: [id, name, createdAt]
     CreateCourseInput:
@@ -130,10 +115,8 @@ components:
         botInstanceId: { type: string }
         userId: { type: string }
         role: { type: string }
-        pageId:
-          type: [string, 'null']
-        courseId:
-          type: [string, 'null']
+        pageId: { type: string, nullable: true }
+        courseId: { type: string, nullable: true }
     Message:
       description: Persisted chat message with optional citations.
       type: object
@@ -160,10 +143,8 @@ components:
         botInstanceId: { type: string }
         userId: { type: string }
         role: { type: string }
-        pageId:
-          type: [string, 'null']
-        courseId:
-          type: [string, 'null']
+        pageId: { type: string, nullable: true }
+        courseId: { type: string, nullable: true }
         createdAt: { type: string, format: date-time }
       required: [id, orgId, botInstanceId, userId, role, createdAt]
     MessagesPair:
@@ -179,8 +160,7 @@ components:
       properties:
         id: { type: string }
         name: { type: string }
-        meta:
-          type: [string, 'null']
+        meta: { type: string, nullable: true }
         createdAt: { type: string, format: date-time }
     KnowledgeDocument:
       description: Uploaded knowledge document metadata.
@@ -201,8 +181,7 @@ components:
         mime: { type: string }
         size: { type: integer }
         status: { type: string }
-        error:
-          type: [string, 'null']
+        error: { type: string, nullable: true }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
         chunks: { type: integer }
@@ -238,9 +217,7 @@ components:
             messages: { type: integer }
             participants: { type: integer }
           required: [conversations, messages, participants]
-        lastActivity:
-          type: [string, 'null']
-          format: date-time
+        lastActivity: { type: string, format: date-time, nullable: true }
       required: [courseId, counts]
     PlanSessionOut:
       description: Planned study session returned by planner.
@@ -248,10 +225,8 @@ components:
       properties:
         start: { type: string, format: date-time }
         end: { type: string, format: date-time }
-        topic:
-          type: [string, 'null']
-        description:
-          type: [string, 'null']
+        topic: { type: string, nullable: true }
+        description: { type: string, nullable: true }
         status: { type: string }
     PlanSessionsResponse:
       description: Planner result with plan id and generated sessions.
@@ -270,228 +245,59 @@ components:
         status: { type: integer }
         detail: { type: string }
         instance: { type: string }
-    Bot:
-      description: Bot entity
-      type: object
-      properties:
-        id: { type: string }
-        name: { type: string }
-        persona:
-          type: [string, 'null']
-      required: [id, name]
-    BotVersion:
-      description: Bot version entity
-      type: object
-      properties:
-        id: { type: string }
-        status: { type: string, enum: [draft, prepared, published, retired] }
-        prompts:
-          type: [string, 'null']
-        tools:
-          type: [string, 'null']
-        temperature:
-          type: [number, 'null']
-      required: [id, status]
-    BotInstance:
-      description: Deployed bot instance bound to a course
+    CalendarEvent:
       type: object
       properties:
         id: { type: string }
         courseId: { type: string }
-        botId: { type: string }
-        versionId: { type: string }
+        title: { type: string }
+        description: { type: string, nullable: true }
+        startAt: { type: string, format: date-time }
+        endAt: { type: string, format: date-time }
+        timezone: { type: string }
+        recurrenceRule: { type: string, nullable: true }
+        location: { type: string, nullable: true }
+        visibility: { type: string, enum: [public, course, private] }
+        ownerUserId: { type: string, nullable: true }
         createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    CalendarEventCreate:
+      type: object
+      properties:
+        courseId: { type: string }
+        title: { type: string }
+        description: { type: string }
+        startAt: { type: string, format: date-time }
+        endAt: { type: string, format: date-time }
+        timezone: { type: string }
+        recurrenceRule: { type: string }
+        location: { type: string }
+        visibility: { type: string, enum: [public, course, private] }
+      required: [courseId, title, startAt, endAt, timezone]
+    CalendarEventUpdate:
+      type: object
+      properties:
+        title: { type: string }
+        description: { type: string }
+        startAt: { type: string, format: date-time }
+        endAt: { type: string, format: date-time }
+        timezone: { type: string }
+        recurrenceRule: { type: string }
+        location: { type: string }
+        visibility: { type: string, enum: [public, course, private] }
 paths:
   /health:
     get:
       summary: Health check
       tags: [Health]
-      operationId: healthCheck
       responses:
         '200':
           description: OK
-        '429': { $ref: '#/components/responses/TooManyRequests' }
-  /api/bots:
-    get:
-      summary: List bots in caller's org
-      tags: [Bots]
-      security: [ { bearerAuth: [] } ]
-      operationId: listBots
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  items:
-                    type: array
-                    items: { $ref: '#/components/schemas/Bot' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '429': { $ref: '#/components/responses/TooManyRequests' }
-    post:
-      summary: Create a bot (instructor/admin)
-      tags: [Bots]
-      security: [ { bearerAuth: [] } ]
-      operationId: createBot
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name: { type: string }
-                persona: {}
-              required: [name]
-            examples:
-              basic:
-                value:
-                  name: "Tutor Bot"
-      responses:
-        '201':
-          description: Created
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/Bot' }
-        '400': { $ref: '#/components/responses/ValidationError' }
-        '403': { description: Forbidden }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '429': { $ref: '#/components/responses/TooManyRequests' }
-        '409': { description: Conflict }
-  /api/bots/{botId}/versions:
-    post:
-      summary: Create a bot version (instructor/admin)
-      tags: [Bots]
-      security: [ { bearerAuth: [] } ]
-      operationId: createBotVersion
-      parameters:
-        - name: botId
-          in: path
-          required: true
-          schema: { type: string }
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                prompts: {}
-                tools: {}
-                temperature: { type: number }
-      responses:
-        '201':
-          description: Created
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/BotVersion' }
-        '400': { $ref: '#/components/responses/ValidationError' }
-        '403': { description: Forbidden }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '429': { $ref: '#/components/responses/TooManyRequests' }
-  /api/bot-versions/{versionId}:
-    patch:
-      summary: Update bot version (status/prompts/tools/temperature)
-      tags: [Bots]
-      security: [ { bearerAuth: [] } ]
-      operationId: updateBotVersion
-      parameters:
-        - name: versionId
-          in: path
-          required: true
-          schema: { type: string }
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                status: { type: string, enum: [draft, prepared, published, retired] }
-                prompts: {}
-                tools: {}
-                temperature: { type: number }
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/BotVersion' }
-        '400': { $ref: '#/components/responses/ValidationError' }
-        '403': { description: Forbidden }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '429': { $ref: '#/components/responses/TooManyRequests' }
-  /api/bots/{botId}/deploy:
-    post:
-      summary: Deploy a bot to a course with a published version
-      tags: [Bots]
-      security: [ { bearerAuth: [] } ]
-      operationId: deployBot
-      parameters:
-        - name: botId
-          in: path
-          required: true
-          schema: { type: string }
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                courseId: { type: string }
-                versionId: { type: string }
-              required: [courseId]
-            examples:
-              basic:
-                value:
-                  courseId: "c_123"
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/BotInstance' }
-        '400': { $ref: '#/components/responses/ValidationError' }
-        '403': { description: Forbidden }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '429': { $ref: '#/components/responses/TooManyRequests' }
-        '409': { description: Conflict }
-  /api/bot-instances:
-    get:
-      summary: List bot instances (optionally by courseId)
-      tags: [Bots]
-      security: [ { bearerAuth: [] } ]
-      operationId: listBotInstances
-      parameters:
-        - name: courseId
-          in: query
-          required: false
-          schema: { type: string }
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  items:
-                    type: array
-                    items: { $ref: '#/components/schemas/BotInstance' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '429': { $ref: '#/components/responses/TooManyRequests' }
   /api/courses:
     get:
       summary: List courses in caller's org
       tags: [Courses]
       security: [ { bearerAuth: [] } ]
-      operationId: listCourses
       responses:
         '200':
           description: OK
@@ -515,7 +321,6 @@ paths:
       summary: Create a course in caller's org (instructor/admin)
       tags: [Courses]
       security: [ { bearerAuth: [] } ]
-      operationId: createCourse
       requestBody:
         required: true
         content:
@@ -545,7 +350,6 @@ paths:
       summary: Update a course (instructor/admin)
       tags: [Courses]
       security: [ { bearerAuth: [] } ]
-      operationId: updateCourse
       parameters:
         - name: courseId
           in: path
@@ -572,11 +376,13 @@ paths:
         '400': { $ref: '#/components/responses/ValidationError' }
         '403': { description: Forbidden }
         '404': { $ref: '#/components/responses/NotFound' }
+        '409': { description: Conflict }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
     delete:
       summary: Delete a course (instructor/admin)
       tags: [Courses]
       security: [ { bearerAuth: [] } ]
-      operationId: deleteCourse
       parameters:
         - name: courseId
           in: path
@@ -589,53 +395,11 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '429': { $ref: '#/components/responses/TooManyRequests' }
         '409': { description: Conflict }
-  /api/calendar/freebusy:
-    get:
-      summary: Get demo free/busy windows (cached, no OAuth)
-      description: Local-only demo endpoint that returns busy windows for the current user in the given range. Intended for planner integration. Real providers will be added later.
-      tags: [Calendar]
-      security: [ { bearerAuth: [] } ]
-      operationId: getFreeBusy
-      parameters:
-        - name: from
-          in: query
-          required: true
-          schema: { type: string, format: date-time }
-        - name: to
-          in: query
-          required: true
-          schema: { type: string, format: date-time }
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  items:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        start: { type: string, format: date-time }
-                        end: { type: string, format: date-time }
-              examples:
-                sample:
-                  value:
-                    items:
-                      - { start: "2025-09-22T12:00:00.000Z", end: "2025-09-22T13:00:00.000Z" }
-                      - { start: "2025-09-22T16:00:00.000Z", end: "2025-09-22T17:00:00.000Z" }
-        '400': { $ref: '#/components/responses/ValidationError' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { description: Forbidden }
-        '429': { $ref: '#/components/responses/TooManyRequests' }
   /api/chat/start:
     post:
       summary: Start a conversation
       tags: [Chat]
       security: [ { bearerAuth: [] } ]
-      operationId: startConversation
       requestBody:
         required: true
         content:
@@ -667,7 +431,6 @@ paths:
       summary: Post a message; optionally SSE stream bot reply
       tags: [Chat]
       security: [ { bearerAuth: [] } ]
-      operationId: postMessage
       parameters:
         - name: conversationId
           in: path
@@ -707,7 +470,6 @@ paths:
       summary: List messages in a conversation
       tags: [Chat]
       security: [ { bearerAuth: [] } ]
-      operationId: listMessages
       parameters:
         - name: conversationId
           in: path
@@ -739,7 +501,6 @@ paths:
       summary: Create a knowledge source (instructor/admin)
       tags: [Knowledge]
       security: [ { bearerAuth: [] } ]
-      operationId: createKnowledgeSource
       requestBody:
         required: true
         content:
@@ -770,7 +531,6 @@ paths:
       summary: Upload a document (multipart)
       tags: [Knowledge]
       security: [ { bearerAuth: [] } ]
-      operationId: uploadKnowledgeDocument
       requestBody:
         required: true
         content:
@@ -799,7 +559,6 @@ paths:
       summary: Get uploaded document status and chunk count
       tags: [Knowledge]
       security: [ { bearerAuth: [] } ]
-      operationId: getKnowledgeDocument
       parameters:
         - name: id
           in: path
@@ -820,7 +579,6 @@ paths:
       summary: Search knowledge (hybrid)
       tags: [Knowledge]
       security: [ { bearerAuth: [] } ]
-      operationId: searchKnowledge
       parameters:
         - name: q
           in: query
@@ -846,7 +604,6 @@ paths:
       summary: Generate plan sessions from constraints
       tags: [Planner]
       security: [ { bearerAuth: [] } ]
-      operationId: generatePlan
       requestBody:
         required: true
         content:
@@ -899,7 +656,6 @@ paths:
       summary: Get mastery snapshots for current user
       tags: [Progress]
       security: [ { bearerAuth: [] } ]
-      operationId: getStudentProgress
       parameters:
         - name: courseId
           in: query
@@ -925,7 +681,6 @@ paths:
       summary: Upsert a mastery snapshot for current user
       tags: [Progress]
       security: [ { bearerAuth: [] } ]
-      operationId: upsertSelfReport
       requestBody:
         required: true
         content:
@@ -959,7 +714,6 @@ paths:
       summary: Course aggregates (counts + lastActivity)
       tags: [Analytics]
       security: [ { bearerAuth: [] } ]
-      operationId: getCourseAnalytics
       parameters:
         - name: courseId
           in: path
@@ -986,7 +740,6 @@ paths:
       summary: Current authenticated user payload
       tags: [Health]
       security: [ { bearerAuth: [] } ]
-      operationId: getMe
       responses:
         '200':
           description: OK
@@ -1000,3 +753,112 @@ paths:
                     additionalProperties: true
         '401': { $ref: '#/components/responses/Unauthorized' }
         '429': { $ref: '#/components/responses/TooManyRequests' }
+  /api/calendar/events:
+    get:
+      summary: List calendar events by courseId and range
+      tags: [Calendar]
+      security: [ { bearerAuth: [] } ]
+      parameters:
+        - name: courseId
+          in: query
+          required: true
+          schema: { type: string }
+        - name: from
+          in: query
+          required: true
+          schema: { type: string, format: date-time }
+        - name: to
+          in: query
+          required: true
+          schema: { type: string, format: date-time }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/CalendarEvent' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: Forbidden }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      summary: Create calendar event (instructor/admin)
+      tags: [Calendar]
+      security: [ { bearerAuth: [] } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CalendarEventCreate' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CalendarEvent' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: Forbidden }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/calendar/events/{id}:
+    get:
+      summary: Get calendar event by id
+      tags: [Calendar]
+      security: [ { bearerAuth: [] } ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CalendarEvent' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: Forbidden }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      summary: Update calendar event (instructor/admin)
+      tags: [Calendar]
+      security: [ { bearerAuth: [] } ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CalendarEventUpdate' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CalendarEvent' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: Forbidden }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      summary: Delete calendar event (instructor/admin)
+      tags: [Calendar]
+      security: [ { bearerAuth: [] } ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '204': { description: No Content }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: Forbidden }
+        '404': { $ref: '#/components/responses/NotFound' }
