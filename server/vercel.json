@@ -1,0 +1,11 @@
+{
+  "functions": {
+    "api/index.ts": {
+      "runtime": "@vercel/node@3"
+    }
+  },
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/index.ts" },
+    { "src": "/docs/(.*)", "dest": "/api/index.ts" }
+  ]
+}
