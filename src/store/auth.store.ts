@@ -4,7 +4,7 @@ import { useNotificationStore } from './notification.store.js';
 export interface User {
   id: string;
   name: string;
-  role: 'student' | 'teacher' | 'lecturer';
+  role: 'student' | 'lecturer' | 'admin';
 }
 
 interface AuthState {

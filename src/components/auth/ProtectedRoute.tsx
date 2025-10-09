@@ -3,7 +3,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth, type AuthState } from '../../hooks/useAuth.js';
 
 interface ProtectedRouteProps {
-  allowedRoles: Array<'student' | 'lecturer' | 'teacher' | 'admin'>;
+  allowedRoles: Array<'student' | 'lecturer' | 'admin'>;
   children?: React.ReactNode;
 }
 
