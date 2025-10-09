@@ -20,6 +20,17 @@ export const LandingPage = () => {
     <div className="min-h-screen bg-background text-text-primary">
       <header className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center">
         <Logo />
+        {import.meta.env.MODE !== 'production' && (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              window.open('http://localhost:4000/admin', '_blank');
+            }}
+          >
+            DEV Admin
+          </Button>
+        )}
       </header>
 
       <main className="container mx-auto flex flex-col items-center justify-center min-h-screen text-center px-4">

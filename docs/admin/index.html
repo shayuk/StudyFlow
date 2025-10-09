@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudyFlow Admin</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 20px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 8px; }
+    th { background: #f3f4f6; text-align: left; }
+    .error { color: #b91c1c; margin: 8px 0; }
+    .controls { margin-bottom: 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .note { color: #374151; font-size: 0.9rem; }
+    .token { width: 420px; max-width: 90vw; }
+  </style>
+</head>
+<body dir="rtl">
+  <h1>ניהול תפקידים (Admin)</h1>
+  <p class="note">
+    במצב Production יש להזין <b>JWT</b> תקף עם הרשאת Admin בשדה למטה.
+    במצב פיתוח ריתן לאפשר Dev Headers על ידי הוספת <code>?dev=1</code> ל־URL.
+  </p>
+
+  <div class="controls">
+    <button id="refreshBtn">רענון</button>
+    <span id="status"></span>
+  </div>
+
+  <div class="controls">
+    <input id="tokenInput" class="token" type="password" placeholder="Authorization Bearer JWT…" />
+    <button id="setTokenBtn">שמור אסימון</button>
+    <button id="clearTokenBtn">נקה אסימון</button>
+    <span class="note" id="authMode"></span>
+  </div>
+  <div id="error" class="error" style="display:none;"></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Role</th>
+        <th>Name</th>
+        <th>Email</th>
+      </tr>
+    </thead>
+    <tbody id="usersBody"></tbody>
+  </table>
+
+  <script src="./panel.js"></script>
+</body>
+</html>
