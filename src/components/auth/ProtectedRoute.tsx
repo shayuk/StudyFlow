@@ -3,7 +3,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth, type AuthState } from '../../hooks/useAuth.js';
 
 interface ProtectedRouteProps {
-  allowedRoles: Array<'student' | 'lecturer' | 'teacher'>;
+  allowedRoles: Array<'student' | 'lecturer' | 'teacher' | 'admin'>;
   children?: React.ReactNode;
 }
 
@@ -20,6 +20,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles, ch
   }
 
   // If the user's role is not in the allowed list, redirect them to their own default page.
-  const defaultPath = user.role === 'student' ? '/app/student' : '/app/lecturer/management';
+  const defaultPath =
+    user.role === 'student'
+      ? '/app/student'
+      : user.role === 'admin'
+        ? '/'
+        : '/app/lecturer/management';
   return <Navigate to={defaultPath} replace />;
 };

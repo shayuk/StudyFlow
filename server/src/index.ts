@@ -13,6 +13,7 @@ import knowledgeRouter from './routes/knowledge';
 import plannerRouter from './routes/planner';
 import analyticsRouter from './routes/analytics';
 import { errorHandler } from './middleware/error';
+import usersRouter from './routes/users';
 
 const app = express();
 
@@ -22,6 +23,8 @@ app.use(rateLimitLocal);
 
 // Serve API docs (Swagger UI) from docs/api at /docs
 app.use('/docs', express.static(path.resolve(__dirname, '../../docs/api')));
+// Serve standalone Admin UI at /admin
+app.use('/admin', express.static(path.resolve(__dirname, '../../docs/admin')));
 
 // Boot-time config checks (non-fatal in dev, fatal in prod)
 const IS_PROD = process.env.NODE_ENV === 'production';
@@ -58,6 +61,7 @@ app.use('/api', progressRouter);
 app.use('/api', knowledgeRouter);
 app.use('/api', plannerRouter);
 app.use('/api', analyticsRouter);
+app.use('/api', usersRouter);
 
 // Centralized error handler must be last
 app.use(errorHandler);
