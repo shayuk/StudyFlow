@@ -1,8 +1,5 @@
 {
   "version": 2,
-  "functions": {
-    "server/api/*.ts": { "runtime": "nodejs20.x" }
-  },
   "routes": [
     { "src": "/api/health", "dest": "server/api/health.ts" },
     { "src": "/api/(.*)",   "dest": "server/api/index.ts" },
