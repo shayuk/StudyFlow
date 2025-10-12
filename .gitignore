@@ -19,6 +19,8 @@ server/prisma/*.db-journal
 server/logs/
 server/storage/
 
+.firebase/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
