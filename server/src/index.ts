@@ -14,12 +14,36 @@ import plannerRouter from './routes/planner';
 import analyticsRouter from './routes/analytics';
 import { errorHandler } from './middleware/error';
 import usersRouter from './routes/users';
+import cors from 'cors';
 
 const app = express();
 
 app.use(express.json());
 app.use(httpLogger);
 app.use(rateLimitLocal);
+
+const allowedOrigins = [
+  'https://studyflow-b6265.web.app'
+];
+
+const corsOrigin = (
+  origin: string | undefined,
+  callback: (err: Error | null, allow?: boolean) => void
+) => {
+  if (!origin) return callback(null, true);
+  const ok =
+    allowedOrigins.includes(origin) ||
+    /\.web\.app$/.test(origin) ||
+    /^http:\/\/localhost:\d+$/.test(origin);
+  callback(ok ? null : new Error('Not allowed by CORS'), ok);
+};
+
+app.use(cors({
+  origin: corsOrigin,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Serve API docs (Swagger UI) from docs/api at /docs
 app.use('/docs', express.static(path.resolve(__dirname, '../../docs/api')));
