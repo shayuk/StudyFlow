@@ -1,10 +1,13 @@
 {
   "version": 2,
+  "functions": {
+    "server/api/*.ts": { "runtime": "@vercel/node@3" }
+  },
   "routes": [
     { "src": "/api/health", "dest": "server/api/health.ts" },
-    { "src": "/api/(.*)", "dest": "server/api/index.ts" },
-    { "src": "/docs/(.*)", "dest": "server/api/index.ts" },
-    { "src": "/health",   "dest": "server/api/index.ts" }
+    { "src": "/api/(.*)",   "dest": "server/api/index.ts" },
+    { "src": "/docs/(.*)",  "dest": "server/api/index.ts" },
+    { "src": "/health",     "dest": "server/api/index.ts" }
   ]
 }
 
