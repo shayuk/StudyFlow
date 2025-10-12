@@ -1,7 +1,7 @@
 {
   "version": 2,
   "functions": {
-    "server/api/*.ts": { "runtime": "@vercel/node@3" }
+    "server/api/*.ts": { "runtime": "nodejs20.x" }
   },
   "routes": [
     { "src": "/api/health", "dest": "server/api/health.ts" },
@@ -10,4 +10,4 @@
     { "src": "/health",     "dest": "server/api/index.ts" }
   ]
 }
-
+```
