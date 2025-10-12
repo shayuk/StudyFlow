@@ -76,6 +76,11 @@ app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({ status: 'ok', service: 'studyflow-server', version: '0.1.0' });
 });
 
+// Explicit API health route for Vercel /api prefix
+app.get('/api/health', (_req: Request, res: Response) => {
+  res.status(200).json({ status: 'ok', service: 'studyflow-server', version: '0.1.0' });
+});
+
 // Protected routes
 app.use('/api', meRouter);
 app.use('/api', coursesRouter);
