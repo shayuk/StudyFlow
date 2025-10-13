@@ -3,7 +3,7 @@ console.log(">>> NODE_ENV =", process.env.NODE_ENV);
 import express, { Request, Response } from 'express';
 import path from 'node:path';
 import { httpLogger, logger } from './logger';
-import { rateLimitLocal } from './middleware/rateLimit';
+import { rateLimitLocal, rateLimitProdGlobal, rateLimitProdAuth } from './middleware/rateLimit';
 import meRouter from './routes/me';
 import coursesRouter from './routes/courses';
 import botsRouter from './routes/bots';
@@ -22,6 +22,11 @@ const app = express();
 app.use(express.json());
 app.use(httpLogger);
 app.use(rateLimitLocal);
+
+// Add production global rate limiter (in-memory)
+if (process.env.NODE_ENV === 'production') {
+  app.use(rateLimitProdGlobal);
+}
 
 const allowedOrigins = [
   'https://studyflow-b6265.web.app'
@@ -92,6 +97,9 @@ app.get('/api/ping', (_req: Request, res: Response) => {
 });
 
 // Public auth routes (register/login) must be before protected routes
+if (IS_PROD) {
+  app.use('/api/auth', rateLimitProdAuth);
+}
 app.use('/api/auth', authRouter);
 
 // Protected routes
