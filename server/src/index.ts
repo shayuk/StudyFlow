@@ -14,6 +14,7 @@ import plannerRouter from './routes/planner';
 import analyticsRouter from './routes/analytics';
 import { errorHandler } from './middleware/error';
 import usersRouter from './routes/users';
+import authRouter from './routes/auth';
 import cors from 'cors';
 
 const app = express();
@@ -34,6 +35,7 @@ const corsOrigin = (
   const ok =
     allowedOrigins.includes(origin) ||
     /\.web\.app$/.test(origin) ||
+    /\.vercel\.app$/.test(origin) ||
     /^http:\/\/localhost:\d+$/.test(origin);
   callback(ok ? null : new Error('Not allowed by CORS'), ok);
 };
@@ -80,6 +82,9 @@ app.get('/health', (_req: Request, res: Response) => {
 app.get('/api/health', (_req: Request, res: Response) => {
   res.status(200).json({ status: 'ok', service: 'studyflow-server', version: '0.1.0' });
 });
+
+// Public auth routes (register/login) must be before protected routes
+app.use('/api/auth', authRouter);
 
 // Protected routes
 app.use('/api', meRouter);
