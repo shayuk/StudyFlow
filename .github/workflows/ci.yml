@@ -10,7 +10,8 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     env:
-      DATABASE_URL: ${{ vars.DATABASE_URL }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DIRECT_URL: ${{ secrets.DIRECT_URL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,12 +39,20 @@ jobs:
       - name: Prepare server env
         run: |
           if [ ! -f server/.env ]; then cp server/.env.example server/.env; fi
+          # Export envs for Prisma CLI
+          : "${DATABASE_URL:=file:./server/prisma/dev-ci.db}"
+          echo "DATABASE_URL=$DATABASE_URL" >> "$GITHUB_ENV"
+          : "${DIRECT_URL:=$DATABASE_URL}"
+          echo "DIRECT_URL=$DIRECT_URL" >> "$GITHUB_ENV"
 
       - name: Ensure DATABASE_URL (with fallback)
         shell: bash
         run: |
           : "${DATABASE_URL:=file:./server/prisma/dev-ci.db}"
           echo "DATABASE_URL=$DATABASE_URL" >> "$GITHUB_ENV"
+          # If DIRECT_URL is not provided, fall back to DATABASE_URL
+          : "${DIRECT_URL:=$DATABASE_URL}"
+          echo "DIRECT_URL=$DIRECT_URL" >> "$GITHUB_ENV"
 
       # 
       - name: Generate Prisma client
