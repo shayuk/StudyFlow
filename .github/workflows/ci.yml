@@ -36,6 +36,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Lint server
+        working-directory: server
+        run: pnpm exec eslint "src/**/*.ts" --max-warnings 0
+
       - name: Prepare server env
         run: |
           if [ ! -f server/.env ]; then cp server/.env.example server/.env; fi
