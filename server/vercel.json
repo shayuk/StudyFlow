@@ -1,8 +1,4 @@
 {
-  "functions": {
-    "api/index.ts": { "runtime": "@vercel/node@3" },
-    "api/health.ts": { "runtime": "@vercel/node@3" }
-  },
   "routes": [
     { "src": "/api/health", "dest": "/api/health.ts" },
     { "src": "/api/(.*)", "dest": "/api/index.ts" },
