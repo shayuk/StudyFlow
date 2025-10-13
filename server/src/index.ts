@@ -83,6 +83,11 @@ app.get('/api/health', (_req: Request, res: Response) => {
   res.status(200).json({ status: 'ok', service: 'studyflow-server', version: '0.1.0' });
 });
 
+// Minimal ping to test Express routing through /api/index.ts without DB
+app.get('/api/ping', (_req: Request, res: Response) => {
+  res.status(200).json({ ok: true, ts: Date.now() });
+});
+
 // Public auth routes (register/login) must be before protected routes
 app.use('/api/auth', authRouter);
 
