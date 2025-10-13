@@ -7,3 +7,7 @@ Remediation steps:
 1) Ensure server/.env contains: DEFAULT_ADMIN_EMAIL=<value>.
 2) Remove DEFAULT_ADMIN_EMAIL from server/prisma/.env (or delete the file).
 3) Re-run CI (Prisma generate step should pass).
+
+- vercel.json (repo root)
+  Reason: Vercel project Root Directory will be set to server/, so only server/vercel.json is used. Keeping a second vercel.json at repo root is confusing and unused.
+  Timing: After confirming Vercel Root Directory is server/ and a successful Production deploy, remove the root vercel.json.
