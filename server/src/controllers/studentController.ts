@@ -1,10 +1,7 @@
-import {
-  CLOSED_CORPUS_ONLY, FAST_PASS_TOKENS, CRITIQUE_TOKENS,
-  TEMPLATES, NON_DISCLOSURE, LANG_DEFAULT, SHOW_CONFIDENCE
-} from "../ai/config";
+import { FAST_PASS_TOKENS, CRITIQUE_TOKENS, TEMPLATES, NON_DISCLOSURE, LANG_DEFAULT, SHOW_CONFIDENCE } from "../ai/config";
 import { asksForPrompt, triesToOverride } from "../ai/sanitize";
 import { logNoCoverage, extractKeywords } from "../telemetry/log";
-import { retrieveAndSanitize, getThreshold } from "../ai/retrieval";
+import { retrieveAndSanitize, getThreshold, type Passage } from "../ai/retrieval";
 
 // ---- types ----
 type Ctx = {
@@ -98,7 +95,7 @@ function startsWithAny(s: string, tokens: string[]) {
   const t = (s || "").trim().toLowerCase();
   return tokens.some(x => t.startsWith(x.toLowerCase()));
 }
-function sourceLine(h: any) {
+function sourceLine(h: Passage) {
   const sec = h.section ? `, ${h.section}` : "";
   const pg = h.page ? `, p.${h.page}` : "";
   return `- ${h.source}${sec}${pg}`;
@@ -126,7 +123,7 @@ function makeTLDR(text: string, lang: string): string {
  * Minimal, LLM-free generator so שהקוד ירוץ “out of the box”.
  * מחליף את קריאת ה-LLM האמיתית עד שתחברי את מנוע ה־AI שלך.
  */
-async function generateFromCorpus(userText: string, hits: any[], opts: { mode: "fast"|"critique"|"socratic", lang: string }): Promise<string> {
+async function generateFromCorpus(userText: string, hits: Passage[], opts: { mode: "fast"|"critique"|"socratic", lang: string }): Promise<string> {
   const top = hits[0]?.text?.trim() ?? "";
   const lang = opts.lang || "he-IL";
 

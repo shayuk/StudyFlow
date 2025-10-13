@@ -15,7 +15,8 @@ type AuthedRequest = Request & {
  */
 router.post("/student/chat", async (req: AuthedRequest, res: Response) => {
   try {
-    const body = (req.body ?? {}) as {
+    const bodyUnknown = req.body as unknown;
+    const body = (bodyUnknown && typeof bodyUnknown === 'object' ? bodyUnknown : {}) as {
       message?: string;
       courseId?: string;
       moduleId?: string;
@@ -34,8 +35,9 @@ router.post("/student/chat", async (req: AuthedRequest, res: Response) => {
 
     const result = await handleStudentTurn(ctx, message);
     return res.json(result);
-  } catch (err: any) {
-    console.error("student/chat error:", err?.stack || err);
+  } catch (err: unknown) {
+    const detail = err instanceof Error ? err.stack || err.message : String(err);
+    console.error("student/chat error:", detail);
     return res.status(500).json({ error: "student_bot_error", message: "Internal error" });
   }
 });

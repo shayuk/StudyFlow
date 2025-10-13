@@ -1,6 +1,6 @@
 import { prisma } from '../db';
 import { logger } from '../logger';
-import { DEFAULT_ADMIN_EMAIL } from '../config';
+import { DEFAULT_ADMIN_EMAIL, SINGLE_ORG_NAME } from '../config';
 import type { Prisma } from '@prisma/client';
 
 function isValidEmail(email: string): boolean {
@@ -20,11 +20,11 @@ export async function ensureDefaultAdmin(): Promise<void> {
     return;
   }
 
-  // Find or create an Org to attach the admin to
-  let org = await prisma.org.findFirst();
+  // Find or create the single Org for production (Ariel University)
+  let org = await prisma.org.findFirst({ where: { name: SINGLE_ORG_NAME } });
   if (!org) {
-    org = await prisma.org.create({ data: { name: 'Default Org' } });
-    logger.info({ orgId: org.id }, 'Created default Org for admin seeding');
+    org = await prisma.org.create({ data: { name: SINGLE_ORG_NAME } });
+    logger.info({ orgId: org.id, name: SINGLE_ORG_NAME }, 'Created single Org for admin seeding');
   }
 
   // Try find user by email

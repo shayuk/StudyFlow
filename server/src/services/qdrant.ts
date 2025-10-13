@@ -28,7 +28,7 @@ type FetchRespMini = {
 };
 
 // עטיפת fetch שמזריקה כותרת api-key אוטומטית ושומרת על שאר ההגדרות
-function qdrantFetch(path: string, init: any = {}) {
+function qdrantFetch(path: string, init: Record<string, unknown> = {}) {
   // נבנה אובייקט כותרות פשוט כדי להימנע מסוגי DOM כמו Headers/HeadersInit
   const outHeaders: Record<string, string> = {};
   const src = init?.headers as unknown;

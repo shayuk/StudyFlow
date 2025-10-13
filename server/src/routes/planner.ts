@@ -35,11 +35,11 @@ const planSchema = z
 type PlanBody = z.infer<typeof planSchema>;
 
 /** Request עם user (אם אין לך אוגמנטציה גלובלית) */
-type AuthedRequest<TBody = any> = Request<
-  Record<string, string>, // params
-  any,                    // res body
-  TBody,                  // req body
-  Record<string, any>     // query
+type AuthedRequest<TBody = unknown> = Request<
+  Record<string, string>,
+  unknown,
+  TBody,
+  Record<string, unknown>
 > & {
   user?: { orgId?: string; sub?: string };
 };

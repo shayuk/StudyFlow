@@ -4,8 +4,10 @@ import { sanitizeRetrievedText } from "./sanitize";
 export type Passage = { id: string; source: string; section?: string; page?: string; sim: number; text: string };
 export type RetrievalResult = { hits: Passage[]; avgSim: number; coherentSources: number };
 
-export function retrieveTopK(_query: string, _k: number): Passage[] {
+export function retrieveTopK(query: string, k: number): Passage[] {
   // TODO: hook your vector store / Qdrant / etc.
+  void query; // silence unused until implemented
+  void k;
   return []; // placeholder
 }
 
@@ -20,6 +22,7 @@ export function getThreshold(moduleKey: string): number {
 }
 
 export function retrieveAndSanitize(query: string, moduleKey = "default"): RetrievalResult {
+  void moduleKey; // threshold handled by caller for now
   const raw = retrieveTopK(query, RAG_TOP_K);
   const hits = raw.map(h => ({ ...h, text: sanitizeRetrievedText(h.text) }));
   const { avgSim, coherentSources } = evalCoverage(hits);
