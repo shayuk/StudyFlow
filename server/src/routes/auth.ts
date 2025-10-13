@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '../db';
-import { signToken } from '../auth/jwt';
+import { signToken, type Role } from '../auth/jwt';
 import { SINGLE_ORG_NAME } from '../config';
 
 const router = Router();
@@ -41,10 +41,10 @@ router.post('/register', async (req: Request, res: Response) => {
 
     const user = await withDbTimeout(prisma.user.create({ data: { orgId: org.id, email: e, name: name || null, role: 'student' } }));
 
-    const token = signToken({ sub: user.id, orgId: user.orgId, roles: [user.role as any] });
+    const token = signToken({ sub: user.id, orgId: user.orgId, roles: [user.role as Role] });
     return res.status(201).json({ token, user: { id: user.id, email: user.email, name: user.name, role: user.role, orgId: user.orgId } });
-  } catch (err: any) {
-    const msg = err?.message || 'register failed';
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'register failed';
     const code = msg.includes('timeout') ? 504 : 500;
     return res.status(code).json({ error: msg });
   }
@@ -63,10 +63,10 @@ router.post('/login', async (req: Request, res: Response) => {
     const user = await withDbTimeout(prisma.user.findUnique({ where: { email: e } }));
     if (!user) return res.status(404).json({ error: 'user not found' });
 
-    const token = signToken({ sub: user.id, orgId: user.orgId, roles: [user.role as any] });
+    const token = signToken({ sub: user.id, orgId: user.orgId, roles: [user.role as Role] });
     return res.status(200).json({ token, user: { id: user.id, email: user.email, name: user.name, role: user.role, orgId: user.orgId } });
-  } catch (err: any) {
-    const msg = err?.message || 'login failed';
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'login failed';
     const code = msg.includes('timeout') ? 504 : 500;
     return res.status(code).json({ error: msg });
   }

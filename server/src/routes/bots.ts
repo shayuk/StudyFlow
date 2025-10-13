@@ -1,5 +1,6 @@
-import { Router, Request, Response } from 'express';
+import { Router, Response } from 'express';
 import { authMiddleware } from '../auth/middleware';
+import type { AuthedRequest as AuthReq } from '../auth/middleware';
 import { requireOrg, requireAnyRole } from '../auth/authorize';
 import { prisma } from '../db';
 import { z } from 'zod';
@@ -7,11 +8,7 @@ import { logger } from '../logger';
 
 const router = Router();
 
-/** טיפוס בקשה עם user (ללא תלות ב-AuthedRequest ממקומות אחרים) */
-type AuthedRequest<TBody = any, TParams extends Record<string, string> = Record<string, string>, TQuery = Record<string, any>> =
-  Request<TParams, any, TBody, TQuery> & {
-    user?: { orgId?: string; sub?: string };
-  };
+// נשתמש ב-AuthedRequest המיוצא ממידלוור האימות כדי לשמור עקביות סוגים
 
 function toJSONString(value: unknown): string | undefined {
   if (value === undefined || value === null) return undefined;
@@ -27,7 +24,7 @@ function toJSONString(value: unknown): string | undefined {
  * List bots within org
  * GET /api/bots
  * ======================== */
-router.get('/bots', authMiddleware, requireOrg(), async (req: AuthedRequest, res: Response) => {
+router.get('/bots', authMiddleware, requireOrg(), async (req: AuthReq, res: Response) => {
   const orgId = req.user?.orgId;
   if (!orgId) return res.status(401).json({ error: 'unauthorized' });
 
@@ -48,7 +45,7 @@ router.post(
   authMiddleware,
   requireOrg(),
   requireAnyRole(['instructor', 'admin']),
-  async (req: AuthedRequest, res: Response) => {
+  async (req: AuthReq, res: Response) => {
     const orgId = req.user?.orgId;
     if (!orgId) return res.status(401).json({ error: 'unauthorized' });
 
@@ -84,7 +81,7 @@ router.post(
   authMiddleware,
   requireOrg(),
   requireAnyRole(['instructor', 'admin']),
-  async (req: AuthedRequest<any, { botId: string }>, res: Response) => {
+  async (req: AuthReq, res: Response) => {
     const orgId = req.user?.orgId;
     if (!orgId) return res.status(401).json({ error: 'unauthorized' });
 
@@ -133,7 +130,7 @@ router.patch(
   authMiddleware,
   requireOrg(),
   requireAnyRole(['instructor', 'admin']),
-  async (req: AuthedRequest<any, { versionId: string }>, res: Response) => {
+  async (req: AuthReq, res: Response) => {
     const orgId = req.user?.orgId;
     if (!orgId) return res.status(401).json({ error: 'unauthorized' });
 
@@ -202,7 +199,7 @@ router.post(
   authMiddleware,
   requireOrg(),
   requireAnyRole(['instructor', 'admin']),
-  async (req: AuthedRequest<{ courseId?: string; versionId?: string }, { botId: string }>, res: Response) => {
+  async (req: AuthReq, res: Response) => {
     const orgId = req.user?.orgId;
     if (!orgId) return res.status(401).json({ error: 'unauthorized' });
 
@@ -273,18 +270,18 @@ router.get(
   authMiddleware,
   requireOrg(),
   requireAnyRole(['instructor', 'admin']),
-  async (req: AuthedRequest<any, Record<string, string>, { courseId?: string }>, res: Response) => {
+  async (req: AuthReq, res: Response) => {
     const orgId = req.user?.orgId;
     if (!orgId) return res.status(401).json({ error: 'unauthorized' });
 
     const courseId = typeof req.query.courseId === 'string' ? req.query.courseId : undefined;
 
     // נמנעים מתלות ב-Prisma namespace types כדי לא לשבור קומפילציה אם ה-client לא נוצר
-    const where /* : Prisma.BotInstanceWhereInput */ = {
+    const where: { courseId?: string; bot: { is: { orgId: string } }; version: { is: Record<string, unknown> } } = {
       ...(courseId ? { courseId } : {}),
       bot: { is: { orgId } }, // restrict to caller org
       version: { is: {} },
-    } as any;
+    };
 
     const instances = await prisma.botInstance.findMany({
       where,
@@ -295,17 +292,21 @@ router.get(
       },
     });
 
-    return res.status(200).json({
-      items: instances.map((i: any) => ({
-        id: i.id,
-        courseId: i.courseId,
-        botId: i.botId,
-        versionId: i.versionId,
-        createdAt: i.createdAt,
-        bot: { id: i.bot.id, name: i.bot.name },
-        version: { id: i.version.id, status: i.version.status },
-      })),
-    });
+    type InstanceView = {
+      id: string; courseId: string; botId: string; versionId: string; createdAt: Date;
+      bot: { id: string; name: string };
+      version: { id: string; status: string };
+    };
+    const items: InstanceView[] = instances.map((i) => ({
+      id: i.id,
+      courseId: i.courseId,
+      botId: i.botId,
+      versionId: i.versionId,
+      createdAt: i.createdAt,
+      bot: { id: i.bot.id, name: i.bot.name },
+      version: { id: i.version.id, status: i.version.status },
+    }));
+    return res.status(200).json({ items });
   }
 );
 
