@@ -85,7 +85,7 @@ app.get('/api/health', (_req: Request, res: Response) => {
 
 // Minimal ping to test Express routing through /api/index.ts without DB
 app.get('/api/ping', (_req: Request, res: Response) => {
-  res.status(200).json({ ok: true, ts: Date.now() });
+  res.setHeader('Cache-Control', 'no-store').status(200).json({ ok: true, ts: Date.now() });
 });
 
 // Public auth routes (register/login) must be before protected routes
