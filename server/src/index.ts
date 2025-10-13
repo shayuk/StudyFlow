@@ -80,19 +80,19 @@ if (DEV_AUTH_MODE) {
 }
 
 app.get('/health', (_req: Request, res: Response) => {
-  res.setHeader('Cache-Control', 'private, no-cache, no-store, must-revalidate')
+  res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate')
     .status(200).json({ status: 'ok', service: 'studyflow-server', version: '0.1.0' });
 });
 
 // Explicit API health route for Vercel /api prefix
 app.get('/api/health', (_req: Request, res: Response) => {
-  res.setHeader('Cache-Control', 'private, no-cache, no-store, must-revalidate')
+  res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate')
     .status(200).json({ status: 'ok', service: 'studyflow-server', version: '0.1.0' });
 });
 
 // Minimal ping to test Express routing through /api/index.ts without DB
 app.get('/api/ping', (_req: Request, res: Response) => {
-  res.setHeader('Cache-Control', 'private, no-cache, no-store, must-revalidate')
+  res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate')
     .status(200).json({ ok: true, ts: Date.now() });
 });
 
