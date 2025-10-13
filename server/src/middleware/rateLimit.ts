@@ -36,3 +36,45 @@ export function rateLimitLocal(req: Request, res: Response, next: NextFunction) 
   res.setHeader('Retry-After', String(retryAfter));
   return res.status(429).json({ error: 'rate limit exceeded' });
 }
+
+// =============================
+// Production limiters (in-memory)
+// =============================
+
+function parseIntEnv(key: string, def: number): number {
+  const v = Number(process.env[key]);
+  return Number.isFinite(v) && v > 0 ? v : def;
+}
+
+const PROD_WINDOW_MS = parseIntEnv('RATE_LIMIT_WINDOW_MS', 60_000);
+const PROD_MAX_GLOBAL = parseIntEnv('RATE_LIMIT_MAX_GLOBAL', 120);
+const PROD_MAX_AUTH = parseIntEnv('RATE_LIMIT_MAX_AUTH', 30);
+
+function makeLimiter(windowMs: number, max: number) {
+  const store = new Map<string, Bucket>();
+  return function limiter(req: Request, res: Response, next: NextFunction) {
+    const ip = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || 'ip';
+    const now = Date.now();
+    const b = store.get(ip);
+    if (!b || b.resetAt <= now) {
+      store.set(ip, { count: 1, resetAt: now + windowMs });
+      res.setHeader('X-RateLimit-Limit', String(max));
+      res.setHeader('X-RateLimit-Remaining', String(max - 1));
+      res.setHeader('X-RateLimit-Reset', String(Math.floor((now + windowMs) / 1000)));
+      return next();
+    }
+    if (b.count < max) {
+      b.count += 1;
+      res.setHeader('X-RateLimit-Limit', String(max));
+      res.setHeader('X-RateLimit-Remaining', String(Math.max(0, max - b.count)));
+      res.setHeader('X-RateLimit-Reset', String(Math.floor(b.resetAt / 1000)));
+      return next();
+    }
+    const retryAfter = Math.max(1, Math.ceil((b.resetAt - now) / 1000));
+    res.setHeader('Retry-After', String(retryAfter));
+    return res.status(429).json({ error: 'rate limit exceeded' });
+  };
+}
+
+export const rateLimitProdGlobal = makeLimiter(PROD_WINDOW_MS, PROD_MAX_GLOBAL);
+export const rateLimitProdAuth = makeLimiter(PROD_WINDOW_MS, PROD_MAX_AUTH);
