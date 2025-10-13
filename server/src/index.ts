@@ -52,22 +52,22 @@ app.use('/docs', express.static(path.resolve(__dirname, '../../docs/api')));
 // Serve standalone Admin UI at /admin
 app.use('/admin', express.static(path.resolve(__dirname, '../../docs/admin')));
 
-// Boot-time config checks (non-fatal in dev, fatal in prod)
+// Boot-time config checks (non-fatal in dev; avoid fatal exit on Vercel)
 const IS_PROD = process.env.NODE_ENV === 'production';
 const DEV_AUTH_MODE = process.env.DEV_AUTH_MODE === 'true';
 const hasOpenAI = !!process.env.OPENAI_API_KEY;
 const hasAnthropic = !!process.env.ANTHROPIC_API_KEY;
+const IS_VERCEL = process.env.VERCEL === '1';
 
 if (!hasOpenAI || !hasAnthropic) {
   const msg = 'LLM API keys missing: ' +
     `${!hasOpenAI ? 'OPENAI_API_KEY ' : ''}${!hasAnthropic ? 'ANTHROPIC_API_KEY' : ''}`.trim();
-  if (IS_PROD) {
+  // On Vercel serverless, never call process.exit — it kills the function and causes hanging connections
+  if (IS_PROD && !IS_VERCEL) {
     logger.error({ msg }, 'Fatal: required LLM keys are not configured in production');
-    // Exit to avoid running a broken service in production
     process.exit(1);
-  } else {
-    logger.warn({ msg }, 'Dev warning: running without full LLM keys. Chat LLM will be disabled/fallback');
   }
+  logger.warn({ msg }, 'Running without full LLM keys. Chat LLM will be disabled/fallback');
 }
 
 if (DEV_AUTH_MODE) {
