@@ -7,6 +7,31 @@ import { z } from 'zod';
 
 const router = Router();
 
+// Read-only: current user's courses (enrollments)
+router.get('/courses/my', authMiddleware, requireOrg(), async (req: AuthedRequest, res: Response) => {
+  const userId = req.user!.sub;
+  const orgId = req.user!.orgId;
+
+  const enrollments = await prisma.enrollment.findMany({
+    where: { userId, course: { orgId } },
+    include: {
+      course: { select: { id: true, name: true, code: true } },
+      // Instructor linkage is optional/not modeled yet; keep placeholder nulls
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  const items = enrollments.map(e => ({
+    id: e.course.id,
+    name: e.course.name,
+    code: e.course.code ?? undefined,
+    instructor: undefined as string | undefined,
+    progress: null as number | null,
+  }));
+
+  return res.status(200).json(items);
+});
+
 // List courses within the caller's org
 router.get('/courses', authMiddleware, requireOrg(), async (req: AuthedRequest, res: Response) => {
   const orgId = req.user!.orgId;
