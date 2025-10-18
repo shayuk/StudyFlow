@@ -3,6 +3,7 @@ import Button from '../../components/ui/Button.js';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card.js';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LabelList } from 'recharts';
 import { EmptyState } from '@/components/EmptyState';
+import { TopicsPanel } from '@/features/analytics/TopicsPanel';
 
 
 
@@ -60,11 +61,7 @@ export const ProgressAnalytics: React.FC = () => {
 
         <div className="mb-6">
           <h3 className="font-bold mb-2 text-text-primary">ניתוח נושאים</h3>
-          <div className="space-y-2">
-            <div className="bg-green-100 text-green-800 p-2 rounded">סטטיסטיקה תיאורית — חזק</div>
-            <div className="bg-red-100 text-red-800 p-2 rounded">רגרסיה — דרוש חיזוק</div>
-            <div className="bg-amber-100 text-amber-800 p-2 rounded">הסתברות — ממוצע</div>
-          </div>
+          <TopicsPanel />
         </div>
 
         <div className="bg-primary-light p-4 rounded-lg">

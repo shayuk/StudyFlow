@@ -1,40 +1,28 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
-
-const defaultMockEvents = [
-  {
-    title: 'שיעור: מבוא לסטטיסטיקה',
-    start: new Date().toISOString().substring(0, 8) + '11T09:00:00',
-    end: new Date().toISOString().substring(0, 8) + '11T11:00:00',
-    backgroundColor: '#3b82f6', // blue-500
-    borderColor: '#3b82f6'
-  },
-  {
-    title: 'מטלה 1: סטטיסטיקה תיאורית',
-    start: new Date().toISOString().substring(0, 8) + '11',
-    end: new Date().toISOString().substring(0, 8) + '15',
-    backgroundColor: '#f59e0b', // amber-500
-    borderColor: '#f59e0b'
-  },
-  {
-    title: 'שיעור: הסתברות',
-    start: new Date().toISOString().substring(0, 8) + '13T14:00:00',
-    end: new Date().toISOString().substring(0, 8) + '13T16:00:00',
-    backgroundColor: '#3b82f6',
-    borderColor: '#3b82f6'
-  },
-];
+import { EmptyState } from '@/components/EmptyState';
+import { getMyEvents, type CalendarEvent } from '@/features/schedule/api';
 
 interface CourseCalendarProps {
   events?: { title: string; start: Date | string; end: Date | string; backgroundColor?: string; borderColor?: string; }[];
 }
 
-export const CourseCalendar: React.FC<CourseCalendarProps> = ({ events = defaultMockEvents }) => {
+export const CourseCalendar: React.FC<CourseCalendarProps> = ({ events }) => {
+  const [loadedEvents, setLoadedEvents] = useState<CalendarEvent[] | null>(events ? [] : null);
+
+  useEffect(() => {
+    if (!events) {
+      (async () => setLoadedEvents(await getMyEvents()))();
+    }
+  }, [events]);
+
+  const calendarEvents = events ?? (Array.isArray(loadedEvents) ? loadedEvents : []);
+
   return (
-    <div className="bg-card p-4 rounded-lg shadow-md h-full text-text-primary">
+    <div className="bg-card p-4 rounded-lg shadow-md h-full text-text-primary" dir="rtl">
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         initialView="timeGridWeek"
@@ -43,12 +31,16 @@ export const CourseCalendar: React.FC<CourseCalendarProps> = ({ events = default
           center: 'title',
           right: 'dayGridMonth,timeGridWeek,timeGridDay'
         }}
-        events={events}
+        events={calendarEvents}
         locale="he"
         direction="rtl"
         height="600px"
         allDaySlot={false}
       />
+      {events === undefined && loadedEvents !== null && loadedEvents.length === 0 && (
+        <div className="mt-3"><EmptyState title="אין אירועים בלוח" subtitle="כשתיווצר מטלה או שיעור—נציג אותה כאן." /></div>
+      )}
     </div>
   );
-};
+}
+;
