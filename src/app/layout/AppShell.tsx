@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Send, Maximize2, Minus } from 'lucide-react';
 import { Navbar } from './Navbar';
 import { useAuth } from '@/hooks/useAuth';
+import { API_BASE, fetchJson } from '@/lib/api';
 
 const ChatWidget = () => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -47,6 +48,23 @@ const ChatWidget = () => {
 
 export const AppShell = () => {
   const user = useAuth(state => state.user);
+
+  useEffect(() => {
+    if (import.meta.env.PROD) {
+      // Minimal proof-of-life ping in production only (no UI changes)
+      // eslint-disable-next-line no-console
+      console.log('API_BASE =', API_BASE);
+      fetchJson('/api/health')
+        .then(v => {
+          // eslint-disable-next-line no-console
+          console.log('health ok:', v);
+        })
+        .catch(e => {
+          // eslint-disable-next-line no-console
+          console.error('health failed:', e);
+        });
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
