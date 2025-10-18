@@ -3,7 +3,7 @@ import Button from '../../components/ui/Button.js';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card.js';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LabelList } from 'recharts';
 import { EmptyState } from '@/components/EmptyState';
-import { TopicsPanel } from '@/features/analytics/TopicsPanel';
+import TopicsPanel from '@/features/analytics/TopicsPanel';
 
 
 
