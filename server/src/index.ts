@@ -28,29 +28,28 @@ if (process.env.NODE_ENV === 'production') {
   app.use(rateLimitProdGlobal);
 }
 
-const allowedOrigins = [
-  'https://studyflow-b6265.web.app'
-];
+// CORS: env-driven allowlist, credentials enabled, and explicit preflight
+const allowedOrigins = new Set(
+  (process.env.ALLOWED_ORIGINS ?? '')
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean)
+);
 
-const corsOrigin = (
-  origin: string | undefined,
-  callback: (err: Error | null, allow?: boolean) => void
-) => {
-  if (!origin) return callback(null, true);
-  const ok =
-    allowedOrigins.includes(origin) ||
-    /\.web\.app$/.test(origin) ||
-    /\.vercel\.app$/.test(origin) ||
-    /^http:\/\/localhost:\d+$/.test(origin);
-  callback(ok ? null : new Error('Not allowed by CORS'), ok);
+const corsOptions: cors.CorsOptions = {
+  origin(origin, cb) {
+    if (!origin) return cb(null, true); // allow curl/health without Origin
+    return cb(null, allowedOrigins.has(origin));
+  },
+  credentials: true,
+  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization'],
 };
 
-app.use(cors({
-  origin: corsOrigin,
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+// Before any routes
+app.use(cors(corsOptions));
+app.use((req, res, next) => { res.setHeader('Vary', 'Origin'); next(); });
+app.options('*', cors(corsOptions));
 
 // Serve API docs (Swagger UI) from docs/api at /docs
 app.use('/docs', express.static(path.resolve(__dirname, '../../docs/api')));
