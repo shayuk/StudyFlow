@@ -8,6 +8,7 @@ import { Textarea } from '../../../components/ui/Textarea.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/Select.tsx';
 import { UploadCloud, X, Trash2, Copy, Edit } from 'lucide-react';
 import { CourseCalendar } from '../../student/CourseCalendar.tsx';
+import { EmptyState } from '@/components/EmptyState';
 
 const AssignmentBuildingTab = () => {
   const setCurrentContext = useUiStore((state: UiState) => state.setCurrentContext);
@@ -196,7 +197,7 @@ const AssignmentBuildingTab = () => {
                 </div>
               </li>
             )) : (
-              <p className="text-sm text-gray-500">אין מטלות עדיין.</p>
+              <EmptyState title="אין מטלות קיימות" subtitle="צרו מטלה חדשה באמצעות הטופס שמשמאל." />
             )}
           </ul>
         </div>

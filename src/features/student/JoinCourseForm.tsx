@@ -2,6 +2,28 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card.tsx';
 
+function HelpHint({ text }: { text: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative inline-flex items-center">
+      <button
+        type="button"
+        className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        title={text}
+        aria-label="איפה מוצאים את קוד הקורס?"
+        onClick={() => setOpen(o => !o)}
+      >
+        <span className="text-xs font-bold">?</span>
+      </button>
+      {open && (
+        <div className="absolute top-6 z-10 max-w-[18rem] rounded-xl border border-gray-200 bg-white p-2 text-xs text-gray-700 shadow-md" role="status">
+          {text}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export const JoinCourseForm = () => {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -26,9 +48,7 @@ export const JoinCourseForm = () => {
         <div className="mx-auto max-w-md sm:max-w-lg w-full" dir="rtl">
           <div className="mb-3 flex items-center gap-2 text-gray-700">
             <h3 className="text-lg font-semibold">הצטרפות לקורס חדש</h3>
-            <span className="text-sm text-gray-500" title="המרצה שולח את קוד הקורס במייל או בוואטסאפ">
-              איפה מוצאים את קוד הקורס?
-            </span>
+            <HelpHint text="המרצה שולח את קוד הקורס במייל או בוואטסאפ" />
           </div>
 
           <form

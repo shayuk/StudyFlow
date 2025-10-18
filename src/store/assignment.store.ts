@@ -20,33 +20,10 @@ export interface AssignmentState {
   duplicateAssignment: (id: string) => void;
 }
 
-const mockAssignments: Assignment[] = [
-  {
-    id: '1',
-    name: 'מטלה 1: סטטיסטיקה תיאורית',
-    type: 'שיעורי בית',
-    topic: 'סטטיסטיקה',
-    instructions: 'יש לפתור את כל השאלות במחברת ולהגיש סרוק.',
-    botInstructions: 'התמקד בהסבר על מדדי מרכז ופיזור. השתמש בדוגמאות מעולם הספורט.',
-    materials: [],
-    startDate: new Date('2023-10-01'),
-    dueDate: new Date('2023-10-10'),
-  },
-  {
-    id: '2',
-    name: 'מטלה 2: הסתברות',
-    type: 'תרגיל',
-    topic: 'הסתברות',
-    instructions: 'יש לענות על השאלות במערכת המקוונת.',
-    botInstructions: 'הסבר את ההבדל בין הסתברות מותנית לבלתי תלויה. השתמש באנלוגיות של קלפים וכדורים.',
-    materials: [],
-    startDate: new Date('2023-10-11'),
-    dueDate: new Date('2023-10-20'),
-  },
-];
+const initialAssignments: Assignment[] = [];
 
 export const useAssignmentStore = create<AssignmentState>((set) => ({
-  assignments: mockAssignments,
+  assignments: initialAssignments,
   addAssignment: (assignment) =>
     set((state) => ({
       assignments: [...state.assignments, { ...assignment, id: new Date().toISOString() }],
