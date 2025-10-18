@@ -8,7 +8,8 @@
     "start": "cross-env NODE_ENV=production node dist/local.js",
     "build": "tsc -p tsconfig.json",
     "docs:sync-openapi": "npx -y @redocly/cli@latest bundle ../docs/api/openapi.yaml -o ../docs/api/openapi.json --ext json",
-    "postinstall": "prisma generate --schema=prisma/schema.prisma"
+    "postinstall": "prisma generate --schema=prisma/schema.prisma",
+    "test": "node --test --import tsx src/test/courses.my.test.ts"
   },
   "prisma": {
     "schema": "prisma/schema.prisma"
@@ -29,15 +30,17 @@
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^4.17.21",
-    "@types/node": "^20.14.12",
     "@types/js-yaml": "^4.0.9",
     "@types/jsonwebtoken": "^9.0.6",
     "@types/multer": "^2.0.0",
+    "@types/node": "^20.14.12",
     "@types/pdf-parse": "^1.1.5",
+    "@types/sinon": "^17.0.4",
     "@types/supertest": "^6.0.3",
     "@vercel/node": "^3.2.0",
     "cross-env": "^10.0.0",
     "prisma": "^6.15.0",
+    "sinon": "^21.0.0",
     "supertest": "^7.0.0",
     "ts-node-dev": "^2.0.0",
     "tsx": "^4.20.5",

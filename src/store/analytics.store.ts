@@ -14,45 +14,8 @@ export interface Student {
   notes: string;
 }
 
-// Mock data that aligns with potential assignment IDs
-const mockStudents: Student[] = [
-    {
-        id: 'student-1',
-        name: 'טומי',
-        status: 'הושלם',
-        grades: [
-            { assignmentId: '1', grade: 90 },
-            { assignmentId: '2', grade: 85 },
-            { assignmentId: '3', grade: 78 },
-        ],
-        approved: true,
-        notes: 'עבודה מצוינת',
-    },
-    {
-        id: 'student-2',
-        name: 'סמנתה סמית',
-        status: 'בתהליך',
-        grades: [
-            { assignmentId: '1', grade: 72 },
-            { assignmentId: '2', grade: 68 },
-            { assignmentId: '3', grade: 60 },
-        ],
-        approved: false,
-        notes: 'נדרש שיפור במטלה 3',
-    },
-    {
-        id: 'student-3',
-        name: 'קארל',
-        status: 'בתהליך',
-        grades: [
-            { assignmentId: '1', grade: 88 },
-            { assignmentId: '2', grade: 70 },
-            { assignmentId: '3', grade: 65 },
-        ],
-        approved: false,
-        notes: 'מאמץ טוב',
-    },
-];
+// Initialize empty (no demo/mocks in production UI)
+const initialStudents: Student[] = [];
 
 export interface AnalyticsState {
   students: Student[];
@@ -61,7 +24,7 @@ export interface AnalyticsState {
 }
 
 export const useAnalyticsStore = create<AnalyticsState>((set) => ({
-  students: mockStudents,
+  students: initialStudents,
   updateStudentNotes: (studentId, notes) =>
     set((state) => ({
       students: state.students.map((s) =>

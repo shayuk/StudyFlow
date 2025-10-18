@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Button from '../../components/ui/Button.js';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card.js';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LabelList } from 'recharts';
+import { EmptyState } from '@/components/EmptyState';
 
 
 
@@ -11,33 +12,14 @@ interface AnalyticsData {
   color: string;
 }
 
-const mockApiCall = (): Promise<AnalyticsData[]> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve([
-        { name: 'סטטיסטיקה', 'רמת שליטה': 90, color: '#22c55e' },
-        { name: 'רגרסיה', 'רמת שליטה': 30, color: '#ef4444' },
-        { name: 'הסתברות', 'רמת שליטה': 60, color: '#f59e0b' },
-        { name: 'אלגברה', 'רמת שליטה': 75, color: '#22c55e' },
-      ]);
-    }, 1500);
-  });
-};
-
 export const ProgressAnalytics: React.FC = () => {
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData[]>([]);
-      const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      const data = await mockApiCall();
-      setAnalyticsData(data);
-      setLoading(false);
-    };
-
-
-        fetchData();
+    // No real API yet -> show empty state (no demo).
+    setAnalyticsData([]);
+    setLoading(false);
   }, []);
 
   
@@ -52,26 +34,26 @@ export const ProgressAnalytics: React.FC = () => {
       <CardContent>
         <div className="mb-6">
           <h3 className="font-bold mb-2 text-text-primary">גרף התקדמות</h3>
-                    <div className="h-48 w-full">
+          <div className="h-48 w-full" dir="rtl">
             {loading ? (
               <div className="flex items-center justify-center h-full text-text-secondary">טוען נתונים...</div>
+            ) : analyticsData.length === 0 ? (
+              <EmptyState title="אין נתונים להצגה" subtitle="כשיתווספו פעילויות והגשות—נציג כאן התקדמות." />
             ) : (
-            <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={analyticsData} layout="vertical" margin={{ top: 5, right: 30, left: 80, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                <XAxis type="number" domain={[0, 100]} hide />
-                                                                <YAxis dataKey="name" type="category" width={180} tickLine={false} axisLine={false} />
-                <Tooltip
-                  cursor={{ fill: 'rgba(238, 242, 255, 0.5)' }}
-                  contentStyle={{ borderRadius: '0.5rem', border: '1px solid #e2e8f0', background: '#ffffff' }}
-                />
-                <Bar dataKey="רמת שליטה" radius={[0, 4, 4, 0]}>
-                  {analyticsData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={analyticsData} layout="vertical" margin={{ top: 8, right: 24, bottom: 8, left: 24 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                  <XAxis type="number" domain={[0, 100]} hide />
+                  <YAxis dataKey="name" type="category" width={180} tickLine={false} axisLine={false} tickMargin={8} />
+                  <Tooltip cursor={{ fill: 'rgba(238, 242, 255, 0.5)' }} contentStyle={{ borderRadius: '0.5rem', border: '1px solid #e2e8f0', background: '#ffffff' }} />
+                  <Bar dataKey="רמת שליטה" radius={[0, 4, 4, 0]}>
+                    <LabelList dataKey="רמת שליטה" position="right" offset={8} />
+                    {analyticsData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
             )}
           </div>
         </div>

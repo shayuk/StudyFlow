@@ -10,6 +10,9 @@ export const StudentDashboard = () => {
   const [courses, setCourses] = useState<CourseCardType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const pageSize = 20;
+  const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
     setCurrentContext('הקורסים שלי');
@@ -17,8 +20,8 @@ export const StudentDashboard = () => {
 
   useEffect(() => {
     let alive = true;
-    getMyCourses()
-      .then((data) => { if (alive) setCourses(data); })
+    getMyCourses(1, pageSize)
+      .then(({ items, hasMore }) => { if (alive) { setCourses(items); setHasMore(hasMore); setPage(2); } })
       .catch((e: unknown) => {
         const msg = e instanceof Error ? e.message : String(e);
         if (alive) setError(msg.includes('401') ? 'unauthorized' : 'failed');
@@ -26,6 +29,13 @@ export const StudentDashboard = () => {
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
   }, []);
+
+  const loadMore = async () => {
+    const { items, hasMore } = await getMyCourses(page, pageSize);
+    setCourses(prev => [...prev, ...items]);
+    setHasMore(hasMore);
+    if (hasMore) setPage(p => p + 1);
+  };
 
   return (
     <div>
@@ -37,16 +47,28 @@ export const StudentDashboard = () => {
       ) : courses.length === 0 ? (
         <div className="text-text-secondary">אין קורסים עדיין</div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {courses.map((course) => (
-            <CourseCard
-              key={course.id}
-              title={course.name}
-              lecturer={course.instructor ?? ''}
-              progress={course.progress ?? 0}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {courses.map((course) => (
+              <CourseCard
+                key={course.id}
+                title={course.name}
+                lecturer={course.instructor ?? ''}
+                progress={course.progress ?? 0}
+              />
+            ))}
+          </div>
+          {hasMore && (
+            <div className="mt-4 flex justify-center">
+              <button
+                onClick={loadMore}
+                className="rounded-xl bg-amber-400 px-5 py-2 font-semibold text-gray-900 hover:bg-amber-300 transition"
+              >
+                עוד…
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       <div className="mt-12">
