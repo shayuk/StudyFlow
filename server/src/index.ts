@@ -84,7 +84,10 @@ app.get('/health', (_req: Request, res: Response) => {
 });
 
 // Explicit API health route for Vercel /api prefix
-app.get('/api/health', (_req: Request, res: Response) => {
+app.get('/api/health', cors(corsOptions), (req: Request, res: Response) => {
+  // TEMP DEBUG: inspect incoming Origin and allowlist env (remove after verification)
+  // eslint-disable-next-line no-console
+  console.log('CORS DEBUG', { origin: req.headers.origin, env: process.env.ALLOWED_ORIGINS });
   res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate')
     .status(200).json({ status: 'ok', service: 'studyflow-server', version: '0.1.0' });
 });
