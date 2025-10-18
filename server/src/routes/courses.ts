@@ -1,4 +1,5 @@
 import { Router, Response } from 'express';
+import crypto from 'crypto';
 import { authMiddleware, AuthedRequest } from '../auth/middleware';
 import { requireOrg, requireAnyRole } from '../auth/authorize';
 import { prisma } from '../db';
@@ -11,25 +12,63 @@ const router = Router();
 router.get('/courses/my', authMiddleware, requireOrg(), async (req: AuthedRequest, res: Response) => {
   const userId = req.user!.sub;
   const orgId = req.user!.orgId;
+  const roles = req.user!.roles || [];
+  const isStaff = roles.includes('instructor') || roles.includes('admin');
+  const roleMask = [...roles].sort().join(',');
 
-  const enrollments = await prisma.enrollment.findMany({
-    where: { userId, course: { orgId } },
+  // Clamp pagination
+  const rawPage = Number(req.query.page ?? 1);
+  const rawPageSize = Number(req.query.pageSize ?? 20);
+  const page = Math.max(1, (rawPage | 0));
+  const pageSize = Math.min(50, Math.max(1, (rawPageSize | 0)));
+  const skip = (page - 1) * pageSize;
+
+  // DB-level filter by userId and orgId through course relation
+  const where = { userId, course: { orgId } } as const;
+
+  // Fetch one extra to compute hasMore
+  const rowsPlusOne = await prisma.enrollment.findMany({
+    where,
     include: {
-      course: { select: { id: true, name: true, code: true } },
-      // Instructor linkage is optional/not modeled yet; keep placeholder nulls
+      course: {
+        select: isStaff
+          ? { id: true, name: true, code: true }
+          : { id: true, name: true },
+      },
     },
     orderBy: { createdAt: 'desc' },
+    skip,
+    take: pageSize + 1,
   });
 
-  const items = enrollments.map(e => ({
+  const hasMore = rowsPlusOne.length > pageSize;
+  const rows = hasMore ? rowsPlusOne.slice(0, pageSize) : rowsPlusOne;
+
+  // Masking for students (defensive)
+  const payload = rows.map(e => ({
     id: e.course.id,
     name: e.course.name,
-    code: e.course.code ?? undefined,
+    ...(isStaff ? { code: (e.course as any).code ?? undefined } : {}),
     instructor: undefined as string | undefined,
     progress: null as number | null,
   }));
 
-  return res.status(200).json(items);
+  // Headers
+  res.set('Cache-Control', 'private, no-store');
+  res.set('Vary', 'Authorization');
+  res.set('X-Page', String(page));
+  res.set('X-PageSize', String(pageSize));
+  res.set('X-Has-More', String(hasMore));
+
+  // Weak ETag aware of user/org/roles/page/size/payload
+  const etagInput = JSON.stringify({ u: userId, o: orgId, r: roleMask, p: page, s: pageSize, d: payload });
+  const weak = 'W/"' + crypto.createHash('sha1').update(etagInput).digest('hex') + '"';
+  if (req.headers['if-none-match'] === weak) {
+    return res.status(304).end();
+  }
+  res.set('ETag', weak);
+
+  return res.status(200).json(payload);
 });
 
 // List courses within the caller's org

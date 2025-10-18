@@ -3,6 +3,7 @@ import { useUiStore, type UiState } from '../../../store/ui.store.js';
 import { useAnalyticsStore } from '../../../store/analytics.store.js';
 import { useAssignmentStore } from '../../../store/assignment.store.js';
 import ReportModal from './ReportModal.js';
+import { EmptyState } from '@/components/EmptyState';
 
 const getGradeColor = (grade: number) => {
   if (grade >= 85) return 'bg-green-200 text-green-800';
@@ -30,6 +31,11 @@ const StudentAnalysisTab = () => {
   return (
     <div className="bg-white shadow-md rounded-lg overflow-hidden">
       <h2 className="text-2xl font-bold p-6 text-gray-800">ניתוח תלמידים</h2>
+      {students.length === 0 ? (
+        <div className="p-6">
+          <EmptyState title="אין נתונים להצגה" subtitle="כשתתווספנה פעילויות והגשות—נציג כאן תלמידים." />
+        </div>
+      ) : (
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -94,6 +100,7 @@ const StudentAnalysisTab = () => {
           </tbody>
         </table>
       </div>
+      )}
       <ReportModal 
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
