@@ -1,8 +1,15 @@
-export const API_BASE = import.meta.env.VITE_API_BASE_URL as string;
+export const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '');
+
+export function apiUrl(path: string) {
+  return `${API_BASE}/api/${String(path || '').replace(/^\/+/, '')}`;
+}
+
+export function apiFetch(path: string, init?: RequestInit) {
+  return fetch(apiUrl(path), init);
+}
 
 export async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const url = new URL(path, API_BASE).toString();
-  const res = await fetch(url, {
+  const res = await apiFetch(path, {
     credentials: 'include',
     headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) },
     ...init,
