@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Send, Maximize2, Minus } from 'lucide-react';
 import { Navbar } from './Navbar';
-import { useAuth } from '@/hooks/useAuth';
 import { API_BASE, fetchJson } from '@/lib/api';
 
 const ChatWidget = () => {
@@ -47,7 +46,6 @@ const ChatWidget = () => {
 };
 
 export const AppShell = () => {
-  const user = useAuth(state => state.user);
 
   useEffect(() => {
     if (import.meta.env.PROD) {
@@ -68,7 +66,7 @@ export const AppShell = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar user={user} />
+      <Navbar />
 
       <main className="py-8">
         <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
