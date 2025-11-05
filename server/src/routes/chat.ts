@@ -4,6 +4,9 @@ import { requireOrg, requireAnyRole } from '../auth/authorize';
 import { prisma } from '../db';
 import { callStudentModel, callLecturerModel } from '../services/llm';
 import { safeCitations } from '../services/knowledge';
+import { openSSE, sseError } from '../utils/sse';
+import { logger } from '../logger';
+import { isLecturerRole, normalizeRole } from '../utils/roles';
 
 const router = Router();
 
@@ -17,6 +20,7 @@ router.post(
     const orgId = req.user!.orgId;
     const userId = req.user!.sub;
     const role = req.user!.roles[0] ?? 'student';
+    const userKind = normalizeRole(role);
 
     const { botInstanceId, pageId, courseId } = (req.body ?? {}) as {
       botInstanceId?: string;
@@ -90,23 +94,7 @@ router.post(
     const context = { pageId: convo.pageId ?? undefined, courseId: convo.courseId ?? undefined };
 
     if (wantsStream) {
-      // Prepare SSE
-      res.setHeader('Content-Type', 'text/event-stream');
-      res.setHeader('Cache-Control', 'no-cache, no-transform');
-      // Close only in tests to guarantee 'end' for Supertest; keep-alive in prod
-      res.setHeader('Connection', process.env.NODE_ENV === 'test' ? 'close' : 'keep-alive');
-      res.flushHeaders?.();
-
-      // debug removed: start marker
-
-      const onClose = () => { try { res.end(); } catch { /* ignore */ } };
-      req.on?.('aborted', onClose);
-      req.on?.('close', onClose);
-
-      // Helper to write SSE lines safely
-      const write = (data: string) => {
-        res.write(`data: ${data.replace(/\n/g, '\\n')}\n\n`);
-      };
+      const sse = openSSE(req, res);
 
       let full = '';
       let botSavedId: string | undefined;
@@ -117,42 +105,45 @@ router.post(
       const safetyMs = 12000;
       const enableSafetyFuse = process.env.SSE_SAFETY_FUSE === '1';
       const safetyKill = (isTestEnv && enableSafetyFuse) ? setTimeout(() => {
-        try {
-          const payload = { done: true, messageId: null, citations: [] };
-          res.write(`data: ${JSON.stringify({ __probe: 'safety_timeout' })}\n\n`);
-          res.write(`data: ${JSON.stringify(payload)}\n\n`);
-        } catch { /* ignore */ }
-        try { res.end(); } catch { /* ignore */ }
+        try { sse.write('delta', { __probe: 'safety_timeout' }); } catch { /* ignore */ }
+        try { sse.write('done', { done: true, messageId: null, citations: [] }); } catch { /* ignore */ }
+        try { sse.end(); } catch { /* ignore */ }
         try { res.socket?.end?.(); } catch { /* ignore */ }
         try { res.socket?.destroy?.(); } catch { /* ignore */ }
       }, safetyMs) : null;
 
       try {
+        // TODO: Test-mode fallback: emits echo content instead of calling real LLM. Ensure tests explicitly set NODE_ENV=test and that prod never hits this path.
         if (isTest) {
           // Deterministic single-chunk content in tests
           full = `(DEV fallback) ${content}`;
-          write(full);
-          // debug removed: wrote chunk (test mode)
+          sse.write('delta', { t: full });
         } else {
+          // LOG#2 – provider/model selection (stream)
+          const requestedProvider = (req.body as any)?.provider || (req.query as any)?.provider || null;
+          const finalProvider = userKind === 'lecturer'
+            ? ((process.env.LECTURER_PROVIDER === 'openai') ? 'openai' : 'anthropic')
+            : 'openai';
+          const model = finalProvider === 'anthropic' ? 'claude-3-haiku-20240307' : 'gpt-4o-mini';
+          logger.info({ tag: 'LOG#2', role, userKind, requestedProvider, finalProvider, model }, 'LLM selection (stream)');
+          // LOG#3 – before call
+          logger.info({ tag: 'LOG#3', provider: finalProvider, model, stream: true }, 'LLM call (before)');
           // Select model by role
-          const stream = role === 'instructor' || role === 'admin'
+          const stream = (userKind === 'lecturer')
             ? await callLecturerModel({ text: content, context })
             : await callStudentModel({ text: content, context });
           // Accumulate full bot text while streaming chunks
           for await (const chunk of stream) {
             full += chunk;
-            write(chunk);
+            sse.write('delta', { t: chunk });
           }
-          // debug removed: finished streaming
         }
 
         // Compute citations from the final full text using safe helper
-        // debug removed: before safeCitations
         const cites = await safeCitations({ orgId, text: full || content, limit: 3 });
         citationsJson = JSON.stringify(
           cites.map((c) => ({ docId: c.docId, idx: c.idx, snippet: c.content.slice(0, 300), score: c.score }))
         );
-        // debug removed: after safeCitations
 
         // Persist bot message as a single record
         const botSaved = await prisma.message.create({
@@ -166,22 +157,15 @@ router.post(
         });
         botSavedId = botSaved.id;
 
-        // debug removed: writing probe
-        // write(JSON.stringify({ __probe: 'finishing_sse', conversationId, messageId: botSavedId }));
-
         // Final event with metadata
-        // debug removed: writing final
-        write(JSON.stringify({ done: true, messageId: botSaved.id, citations: JSON.parse(citationsJson) }));
-      } catch {
-        // Provider or DB error: still send a minimal final event so clients can finish
-        // debug removed: catch
-        const payload = { done: true, messageId: botSavedId ?? null, citations: JSON.parse(citationsJson) };
-        try { write(JSON.stringify(payload)); } catch { /* ignore */ }
+        sse.write('done', { done: true, messageId: botSaved.id, citations: JSON.parse(citationsJson) });
+      } catch (e) {
+        sseError(res, (e as any)?.message || 'Chat streaming failed');
       } finally {
-        // End and aggressively close to guarantee 'end' for Supertest on all platforms
-        // debug removed: finally closing
         try { if (safetyKill) clearTimeout(safetyKill); } catch { /* ignore */ }
-        try { res.end(); } catch { /* ignore */ }
+        // TODO: Test-only socket teardown: ensure this only runs in tests to avoid prematurely closing client connections in dev/prod.
+        // Always end SSE in tests; in prod, client will close when done
+        try { sse.end(); } catch { /* ignore */ }
         if (process.env.NODE_ENV === 'test') {
           try { res.socket?.end?.(); } catch { /* ignore */ }
           try { res.socket?.destroy?.(); } catch { /* ignore */ }
@@ -190,27 +174,48 @@ router.post(
       return;
     }
 
-    // Non-streaming fallback (existing behavior, preserves tests)
-    const providerText = role === 'instructor' || role === 'admin' ? `Bot: ${content}` : `Bot: ${content}`;
-    // Non-stream citations (compute quickly with safe helper on content)
+    // Non-stream: perform real LLM call by aggregating streaming chunks
+    const requestedProvider = (req.body as any)?.provider || (req.query as any)?.provider || null;
+    const finalProvider = userKind === 'lecturer'
+      ? ((process.env.LECTURER_PROVIDER === 'openai') ? 'openai' : 'anthropic')
+      : 'openai';
+    const model = finalProvider === 'anthropic' ? 'claude-3-haiku-20240307' : 'gpt-4o-mini';
+    // LOG#2 – selection (non-stream)
+    logger.info({ tag: 'LOG#2', role, userKind, requestedProvider, finalProvider, model }, 'LLM selection (non-stream)');
+    // LOG#3 – before call
+    logger.info({ tag: 'LOG#3', provider: finalProvider, model, stream: false }, 'LLM call (before)');
+
     try {
-      const cites = await safeCitations({ orgId, text: content, limit: 3 });
+      const stream = (finalProvider === 'anthropic' && userKind === 'lecturer')
+        ? await callLecturerModel({ text: content, context })
+        : await callStudentModel({ text: content, context });
+      let full = '';
+      for await (const chunk of stream) full += chunk;
+
+      // Compute citations on full bot text
+      const cites = await safeCitations({ orgId, text: full || content, limit: 3 });
       citationsJson = JSON.stringify(
         cites.map((c) => ({ docId: c.docId, idx: c.idx, snippet: c.content.slice(0, 300), score: c.score }))
       );
-    } catch { citationsJson = '[]'; }
 
-    const botMsg = await prisma.message.create({
-      data: {
-        conversationId,
-        sender: 'bot',
-        content: providerText,
-        citations: citationsJson,
-      },
-      select: { id: true, sender: true, content: true, createdAt: true },
-    });
+      // Persist bot message
+      const botMsg = await prisma.message.create({
+        data: {
+          conversationId,
+          sender: 'bot',
+          content: full,
+          citations: citationsJson,
+        },
+        select: { id: true, sender: true, content: true, createdAt: true },
+      });
 
-    return res.status(200).json({ user: userMsg, bot: botMsg });
+      return res.status(200).json({ message: botMsg, provider: finalProvider, model });
+    } catch (e) {
+      // LOG#4 – provider error / LOG#5 – fallback decision
+      logger.warn({ tag: 'LOG#4', provider: finalProvider, model, error: String(e) }, 'LLM provider error (non-stream)');
+      logger.warn({ tag: 'LOG#5', reason: 'exception', provider: finalProvider }, 'FALLBACK (blocked): returning 503');
+      return res.status(503).json({ code: 'LLM_UNAVAILABLE', message: 'שירות ה-AI אינו זמין. נסו שוב מאוחר יותר.' });
+    }
   }
 );
 
