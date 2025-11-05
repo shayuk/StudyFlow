@@ -21,7 +21,11 @@ export interface LlmContext {
 
 export async function callStudentModel(params: { text: string; context?: LlmContext }): Promise<TextStream> {
   const { text } = params;
+  // TODO: Test/dev fallback path: returns echo instead of real OpenAI call when NODE_ENV=test or OPENAI_API_KEY is missing. Replace with a test stub only in tests; in dev, consider surfacing a clear error.
   if (isTest || !hasOpenAI) {
+    // LOG#5 – fallback
+    const reason = isTest ? 'test-mode' : 'no-key';
+    logger.warn({ tag: 'LOG#5', reason, provider: 'openai' }, 'FALLBACK: using echo for student model');
     return stringToStream(`(DEV fallback) ${text}`);
   }
   // OpenAI Responses API (stream mode)
@@ -32,6 +36,8 @@ export async function callStudentModel(params: { text: string; context?: LlmCont
     body: ReadableStream<Uint8Array> | null;
     text?: () => Promise<string>;
   };
+  // LOG#3 – before call
+  logger.info({ tag: 'LOG#3', provider: 'openai', model: 'gpt-4o-mini', stream: true }, 'LLM call (before)');
   const resp = (await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -47,7 +53,13 @@ export async function callStudentModel(params: { text: string; context?: LlmCont
       ],
     }),
   })) as unknown as FetchResponse;
+  // TODO: Error fallback: missing body or non-OK response. Add logging with status/body and surface a metric; avoid silent fallback masking outages.
   if (!resp.ok || !resp.body) {
+    // LOG#4 – provider error
+    const body = await safeReadText(resp);
+    logger.warn({ tag: 'LOG#4', provider: 'openai', status: resp.status, statusText: resp.statusText, body }, 'LLM provider error (student)');
+    // LOG#5 – fallback
+    logger.warn({ tag: 'LOG#5', reason: 'upstream-error', provider: 'openai' }, 'FALLBACK: student echo after error');
     return stringToStream(`(LLM error fallback) ${text}`);
   }
   const reader = (resp.body as ReadableStream<Uint8Array>).getReader();
@@ -64,6 +76,8 @@ export async function callStudentModel(params: { text: string; context?: LlmCont
 }
 
 import { logger } from '../logger';
+// LOG#1 – key load
+logger.info({ tag: 'LOG#1', hasOpenAI, hasAnthropic, NODE_ENV: process.env.NODE_ENV, VERCEL: process.env.VERCEL === '1' }, 'LLM keys and environment loaded');
 
 // Safely read response body for diagnostics
 type TextReadable = { text?: () => Promise<string> };
@@ -73,7 +87,11 @@ async function safeReadText(resp?: TextReadable): Promise<string> {
 
 export async function callLecturerModel(params: { text: string; context?: LlmContext; highGear?: boolean }): Promise<TextStream> {
   const { text, highGear } = params;
+  // TODO: Test/dev fallback path: returns echo when NODE_ENV=test or ANTHROPIC_API_KEY is missing. Ensure prod fails fast or glides to OpenAI, not echo.
   if (isTest || !hasAnthropic) {
+    // LOG#5 – fallback
+    const reason = isTest ? 'test-mode' : 'no-key';
+    logger.warn({ tag: 'LOG#5', reason, provider: 'anthropic' }, 'FALLBACK: using echo for lecturer model');
     return stringToStream(`(DEV fallback) ${text}`);
   }
   // Using Anthropic messages API with streaming SSE
@@ -91,6 +109,8 @@ export async function callLecturerModel(params: { text: string; context?: LlmCon
   const baseDelayMs = 300;
   for (let i = 0; i < attempts; i++) {
     try {
+      // LOG#3 – before call
+      logger.info({ tag: 'LOG#3', provider: 'anthropic', model, stream: true, attempt: i + 1 }, 'LLM call (before)');
       const resp = (await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
@@ -115,11 +135,17 @@ export async function callLecturerModel(params: { text: string; context?: LlmCon
           continue;
         }
         const bodyText = await safeReadText(resp);
+        // LOG#4 – provider error
+        logger.warn({ tag: 'LOG#4', provider: 'anthropic', status: resp.status, statusText: resp.statusText, body: bodyText }, 'LLM provider error (lecturer)');
         logger.warn({ provider: 'openai_glide', status: resp.status, statusText: resp.statusText, model, body: bodyText }, 'Gliding to OpenAI from Anthropic failure');
         if (allowGlide && hasOpenAI) {
+          // LOG#5 – fallback (glide)
+          logger.warn({ tag: 'LOG#5', reason: 'glide', provider: 'openai' }, 'FALLBACK: gliding to OpenAI');
           try { return await callStudentModel({ text, context: params.context }); }
           catch (e) { logger.warn({ provider: 'openai_glide', error: String(e), model }, 'OpenAI glide failed'); }
         }
+        // TODO: Final fallback to echo after provider failures. Consider surfacing a user-visible error and logging a metric instead of echo response.
+        logger.warn({ tag: 'LOG#5', reason: 'upstream-error', provider: 'anthropic' }, 'FALLBACK: lecturer echo after error');
         return stringToStream(`(LLM error fallback) ${text}`);
       }
       const reader = (resp.body as ReadableStream<Uint8Array>).getReader();
@@ -142,19 +168,29 @@ export async function callLecturerModel(params: { text: string; context?: LlmCon
         await new Promise((r) => setTimeout(r, baseDelayMs * (i + 1)));
         continue;
       }
+      // LOG#4 – provider error (exception)
+      logger.warn({ tag: 'LOG#4', provider: 'anthropic', error: detail, model }, 'LLM provider exception (lecturer)');
       logger.warn({ provider: 'openai_glide', error: detail, model }, 'Gliding to OpenAI from Anthropic exception');
       if (allowGlide && hasOpenAI) {
+        // LOG#5 – fallback (glide)
+        logger.warn({ tag: 'LOG#5', reason: 'glide', provider: 'openai' }, 'FALLBACK: gliding to OpenAI');
         try { return await callStudentModel({ text, context: params.context }); }
         catch (e) { logger.warn({ provider: 'openai_glide', error: String(e), model }, 'OpenAI glide failed'); }
       }
+      // TODO: Final fallback on exception: returns echo. Prefer explicit error to client and metric for alerting.
+      logger.warn({ tag: 'LOG#5', reason: 'exception', provider: 'anthropic' }, 'FALLBACK: lecturer echo after exception');
       return stringToStream(`(LLM error fallback) ${text}`);
     }
   }
   // Should not reach here, but in case no return happened inside attempts
   logger.warn({ provider: 'openai_glide', model }, 'Gliding to OpenAI after exhausting Anthropic retries');
   if (allowGlide && hasOpenAI) {
+    // LOG#5 – fallback (glide)
+    logger.warn({ tag: 'LOG#5', reason: 'glide', provider: 'openai' }, 'FALLBACK: gliding to OpenAI');
     try { return await callStudentModel({ text, context: params.context }); }
     catch (e) { logger.warn({ provider: 'openai_glide', error: String(e), model }, 'OpenAI glide failed'); }
   }
+  // TODO: Exhausted all providers: echo fallback. Consider returning a structured error and guidance to user; log high-severity metric.
+  logger.warn({ tag: 'LOG#5', reason: 'exhausted', provider: 'anthropic' }, 'FALLBACK: lecturer echo after exhausted retries');
   return stringToStream(`(LLM error fallback) ${text}`);
 }

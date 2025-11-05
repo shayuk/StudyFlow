@@ -16,6 +16,8 @@ import { errorHandler } from './middleware/error';
 import usersRouter from './routes/users';
 import authRouter from './routes/auth';
 import cors from 'cors';
+import healthRouter from './routes/health';
+import requireLLM from './middleware/requireLLM';
 
 const app = express();
 
@@ -49,7 +51,22 @@ const corsOptions: cors.CorsOptions = {
 // Before any routes
 app.use(cors(corsOptions));
 app.use((req, res, next) => { res.setHeader('Vary', 'Origin'); next(); });
-app.options('*', cors(corsOptions));
+// Explicit OPTIONS handling to return precise headers
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    const origin = req.headers.origin as string | undefined;
+    const allowed = !origin || allowedOrigins.has(origin);
+    if (allowed && origin) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'content-type, authorization');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Vary', 'Origin');
+    return res.status(204).end();
+  }
+  return next();
+});
 
 // Serve API docs (Swagger UI) from docs/api at /docs
 app.use('/docs', express.static(path.resolve(__dirname, '../../docs/api')));
@@ -67,10 +84,12 @@ if (!hasOpenAI || !hasAnthropic) {
   const msg = 'LLM API keys missing: ' +
     `${!hasOpenAI ? 'OPENAI_API_KEY ' : ''}${!hasAnthropic ? 'ANTHROPIC_API_KEY' : ''}`.trim();
   // On Vercel serverless, never call process.exit — it kills the function and causes hanging connections
+  // TODO: Using process.exit(1) in prod stops the server if keys are missing. Ensure fail-fast is desired and document this in ops/healthchecks.
   if (IS_PROD && !IS_VERCEL) {
     logger.error({ msg }, 'Fatal: required LLM keys are not configured in production');
     process.exit(1);
   }
+  // TODO: Running without full LLM keys triggers fallback behavior. Consider gating chat endpoints or emitting a metric to detect unintended fallback in non-prod.
   logger.warn({ msg }, 'Running without full LLM keys. Chat LLM will be disabled/fallback');
 }
 
@@ -103,6 +122,12 @@ if (IS_PROD) {
   app.use('/api/auth', rateLimitProdAuth);
 }
 app.use('/api/auth', authRouter);
+
+// Public health routes
+app.use('/api', healthRouter);
+
+// Enforce LLM presence for chat endpoints when configured
+app.use('/api/chat', requireLLM);
 
 // Protected routes
 app.use('/api', meRouter);
