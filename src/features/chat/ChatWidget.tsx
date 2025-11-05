@@ -3,8 +3,8 @@ import Button from '../../components/ui/Button.tsx';
 import { Card, CardContent, CardHeader } from '../../components/ui/Card.tsx';
 import { MessageSquare, X, Send, Maximize, Minimize } from 'lucide-react';
 import { useUiStore } from '../../store/ui.store.ts';
-import type { User } from '../../store/auth.store.ts';
 import { useNotificationStore } from '../../store/notification.store.ts';
+import { useAuth, type AuthState } from '@/hooks/useAuth';
 
 interface ChatMessage {
   id: string;
@@ -12,11 +12,8 @@ interface ChatMessage {
   sender: 'bot' | 'user';
 }
 
-interface ChatWidgetProps {
-  user: User | null;
-}
-
-export const ChatWidget: React.FC<ChatWidgetProps> = ({ user }) => {
+export const ChatWidget: React.FC = () => {
+  const user = useAuth((s: AuthState) => s.user);
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [userInput, setUserInput] = useState('');

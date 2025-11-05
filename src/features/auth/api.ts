@@ -18,3 +18,17 @@ export async function registerEmail(email: string): Promise<RegisterResponse> {
   }
   return res.json() as Promise<RegisterResponse>;
 }
+
+export async function loginEmail(email: string): Promise<RegisterResponse> {
+  const res = await fetch(apiUrl('auth/login'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ email }),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`login_failed_${res.status}:${text}`);
+  }
+  return res.json() as Promise<RegisterResponse>;
+}

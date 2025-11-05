@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import type { User } from '../../store/auth.store.js';
 import { NotificationBell } from '../../features/notifications/NotificationBell.js';
+import Button from '@/components/ui/Button';
+import { AuthModal } from '@/features/auth/AuthModal';
+import { useAuth, type AuthState } from '../../hooks/useAuth.ts';
 
 const Logo = () => (
   <Link to="/" className="flex items-center space-x-2 rtl:space-x-reverse">
@@ -48,39 +50,48 @@ const LecturerNav = () => (
   </>
 );
 
-interface NavbarProps {
-  user: User | null;
-}
-
-export const Navbar: React.FC<NavbarProps> = ({ user }) => {
-
+export const Navbar: React.FC = () => {
+  const user = useAuth((s: AuthState) => s.user);
+  const logout = useAuth((s: AuthState) => s.logout);
   const isStudent = user?.role === 'student';
   const isLecturer = user?.role === 'lecturer';
+  const [showAuth, setShowAuth] = useState(false);
 
   return (
-    <header className="bg-primary text-white shadow-md sticky top-0 z-40">
-      <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center">
-            <Logo />
+    <>
+      <header className="bg-primary text-white shadow-md sticky top-0 z-40">
+        <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center">
+              <Logo />
+              <div className="hidden md:block">
+                <div className="ml-10 flex items-baseline space-x-4 rtl:space-x-reverse rtl:ml-0 rtl:mr-10">
+                  {isStudent && <StudentNav />}
+                  {isLecturer && <LecturerNav />}
+                </div>
+              </div>
+            </div>
             <div className="hidden md:block">
-              <div className="ml-10 flex items-baseline space-x-4 rtl:space-x-reverse rtl:ml-0 rtl:mr-10">
-                {isStudent && <StudentNav />}
-                {isLecturer && <LecturerNav />}
+              <div className="ml-4 flex items-center md:ml-6 space-x-4 rtl:space-x-reverse">
+                {user ? (
+                  <>
+                    <NotificationBell />
+                    <span className="text-gray-300">שלום, {user?.name}</span>
+                    <button onClick={logout} className="bg-secondary hover:bg-secondary-dark text-white font-bold py-2 px-4 rounded-full transition-colors">
+                      התנתקות
+                    </button>
+                  </>
+                ) : (
+                  <Button variant="secondary" size="sm" onClick={() => setShowAuth(true)}>
+                    התחברות
+                  </Button>
+                )}
               </div>
             </div>
           </div>
-          <div className="hidden md:block">
-            <div className="ml-4 flex items-center md:ml-6 space-x-4 rtl:space-x-reverse">
-              <NotificationBell />
-              <span className="text-gray-300">שלום, {user?.name}</span>
-              <button className="bg-secondary hover:bg-secondary-dark text-white font-bold py-2 px-4 rounded-full transition-colors">
-                התנתקות
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
-    </header>
+        </nav>
+      </header>
+      <AuthModal open={showAuth} onClose={() => setShowAuth(false)} />
+    </>
   );
 };

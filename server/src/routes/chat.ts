@@ -86,11 +86,28 @@ router.post(
 
     let citationsJson = '[]';
 
+    // ── Shared selection context (scope-wide) ─────────────────────────────
+    const role = req.user!.roles[0] ?? 'student';
+    const userKind = normalizeRole(role);
+    const reqId = (res.locals as any).reqId;
+    const requestedProvider =
+      (req.body as any)?.provider || (req.query as any)?.provider || null;
+    const studentModel = process.env.STUDENT_MODEL || 'gpt-4o-mini';
+    const lecturerModel = process.env.LECTURER_MODEL || 'claude-3-haiku-20240307';
+    const finalProvider =
+      userKind === 'lecturer'
+        ? (process.env.LECTURER_PROVIDER === 'openai' ? 'openai' : 'anthropic')
+        : 'openai';
+    const model = finalProvider === 'anthropic' ? lecturerModel : studentModel;
+    logger.info(
+      { tag: 'LOG#2', reqId, role, userKind, requestedProvider, finalProvider, model },
+      'LLM selection'
+    );
+
     // Streaming toggle: Accept: text/event-stream or ?stream=1
     const wantsStream =
       (req.header('accept')?.includes('text/event-stream') ?? false) || (req.query?.stream === '1');
 
-    const role = req.user!.roles[0] ?? 'student';
     const context = { pageId: convo.pageId ?? undefined, courseId: convo.courseId ?? undefined };
 
     if (wantsStream) {
@@ -119,15 +136,8 @@ router.post(
           full = `(DEV fallback) ${content}`;
           sse.write('delta', { t: full });
         } else {
-          // LOG#2 – provider/model selection (stream)
-          const requestedProvider = (req.body as any)?.provider || (req.query as any)?.provider || null;
-          const finalProvider = userKind === 'lecturer'
-            ? ((process.env.LECTURER_PROVIDER === 'openai') ? 'openai' : 'anthropic')
-            : 'openai';
-          const model = finalProvider === 'anthropic' ? 'claude-3-haiku-20240307' : 'gpt-4o-mini';
-          logger.info({ tag: 'LOG#2', role, userKind, requestedProvider, finalProvider, model }, 'LLM selection (stream)');
-          // LOG#3 – before call
-          logger.info({ tag: 'LOG#3', provider: finalProvider, model, stream: true }, 'LLM call (before)');
+          // LOG#3 – before call (stream)
+          logger.info({ tag: 'LOG#3', reqId, provider: finalProvider, model, stream: true }, 'LLM call (before)');
           // Select model by role
           const stream = (userKind === 'lecturer')
             ? await callLecturerModel({ text: content, context })
@@ -175,15 +185,8 @@ router.post(
     }
 
     // Non-stream: perform real LLM call by aggregating streaming chunks
-    const requestedProvider = (req.body as any)?.provider || (req.query as any)?.provider || null;
-    const finalProvider = userKind === 'lecturer'
-      ? ((process.env.LECTURER_PROVIDER === 'openai') ? 'openai' : 'anthropic')
-      : 'openai';
-    const model = finalProvider === 'anthropic' ? 'claude-3-haiku-20240307' : 'gpt-4o-mini';
-    // LOG#2 – selection (non-stream)
-    logger.info({ tag: 'LOG#2', role, userKind, requestedProvider, finalProvider, model }, 'LLM selection (non-stream)');
-    // LOG#3 – before call
-    logger.info({ tag: 'LOG#3', provider: finalProvider, model, stream: false }, 'LLM call (before)');
+    // LOG#3 – before call (non-stream)
+    logger.info({ tag: 'LOG#3', reqId, provider: finalProvider, model, stream: false }, 'LLM call (before)');
 
     try {
       const stream = (finalProvider === 'anthropic' && userKind === 'lecturer')
@@ -212,8 +215,8 @@ router.post(
       return res.status(200).json({ message: botMsg, provider: finalProvider, model });
     } catch (e) {
       // LOG#4 – provider error / LOG#5 – fallback decision
-      logger.warn({ tag: 'LOG#4', provider: finalProvider, model, error: String(e) }, 'LLM provider error (non-stream)');
-      logger.warn({ tag: 'LOG#5', reason: 'exception', provider: finalProvider }, 'FALLBACK (blocked): returning 503');
+      logger.warn({ tag: 'LOG#4', reqId, provider: finalProvider, model, error: String(e) }, 'LLM provider error (non-stream)');
+      logger.warn({ tag: 'LOG#5', reqId, reason: 'exception', provider: finalProvider }, 'FALLBACK (blocked): returning 503');
       return res.status(503).json({ code: 'LLM_UNAVAILABLE', message: 'שירות ה-AI אינו זמין. נסו שוב מאוחר יותר.' });
     }
   }

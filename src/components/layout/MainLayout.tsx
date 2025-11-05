@@ -18,10 +18,10 @@ const MainLayout: React.FC = () => {
   return (
     <div dir="rtl" className="flex flex-col min-h-screen bg-background text-text-primary">
       <NotificationManager />
-      <Navbar user={user} />
+      <Navbar />
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Outlet />
-        <ChatWidget user={user} />
+        <ChatWidget />
       </main>
     </div>
   );
