@@ -2,7 +2,8 @@ import { create } from 'zustand';
 
 interface User {
   id: string;
-  name: string;
+  name?: string;
+  email?: string;
   role: 'student' | 'lecturer' | 'admin';
 }
 
@@ -11,6 +12,7 @@ export interface AuthState {
   login: (user: User) => void;
   logout: () => void;
   loginByRole: (role: 'student' | 'lecturer' | 'admin') => void;
+  loginWithToken: (user: User, token: string) => void;
 }
 
 const mockUsers: Record<'student' | 'lecturer' | 'admin', User> = {
@@ -22,6 +24,13 @@ const mockUsers: Record<'student' | 'lecturer' | 'admin', User> = {
 export const useAuth = create<AuthState>((set) => ({
   user: null,
   login: (user) => set({ user }),
-  logout: () => set({ user: null }),
+  logout: () => {
+    try { localStorage.removeItem('jwt'); } catch {}
+    set({ user: null });
+  },
   loginByRole: (role) => set({ user: mockUsers[role] }),
+  loginWithToken: (user, token) => {
+    try { localStorage.setItem('jwt', token); } catch {}
+    set({ user });
+  },
 }));
