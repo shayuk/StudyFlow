@@ -1,9 +1,15 @@
+// server/src/index.ts
 import 'dotenv/config';
 console.log(">>> NODE_ENV =", process.env.NODE_ENV);
+
 import express, { Request, Response } from 'express';
 import path from 'node:path';
+import cors from 'cors';
+
 import { httpLogger, logger } from './logger';
 import { rateLimitLocal, rateLimitProdGlobal, rateLimitProdAuth } from './middleware/rateLimit';
+import { errorHandler } from './middleware/error';
+
 import meRouter from './routes/me';
 import coursesRouter from './routes/courses';
 import botsRouter from './routes/bots';
@@ -12,25 +18,14 @@ import progressRouter from './routes/progress';
 import knowledgeRouter from './routes/knowledge';
 import plannerRouter from './routes/planner';
 import analyticsRouter from './routes/analytics';
-import { errorHandler } from './middleware/error';
 import usersRouter from './routes/users';
 import authRouter from './routes/auth';
-import cors from 'cors';
 import healthRouter from './routes/health';
 import requireLLM from './middleware/requireLLM';
 
 const app = express();
 
-app.use(express.json());
-app.use(httpLogger);
-app.use(rateLimitLocal);
-
-// Add production global rate limiter (in-memory)
-if (process.env.NODE_ENV === 'production') {
-  app.use(rateLimitProdGlobal);
-}
-
-// CORS: env-driven allowlist, credentials enabled, and explicit preflight
+/** ===== CORS (לפני כל מידלוור אחר) ===== */
 const allowedOrigins = new Set(
   (process.env.ALLOWED_ORIGINS ?? '')
     .split(',')
@@ -40,56 +35,46 @@ const allowedOrigins = new Set(
 
 const corsOptions: cors.CorsOptions = {
   origin(origin, cb) {
-    if (!origin) return cb(null, true); // allow curl/health without Origin
-    return cb(null, allowedOrigins.has(origin));
+    // מאפשר קריאות בלי Origin (curl/health)
+    if (!origin) return cb(null, true);
+    if (allowedOrigins.has(origin)) return cb(null, true);
+    console.warn('[CORS] blocked origin:', origin);
+    return cb(new Error('Not allowed by CORS: ' + origin));
   },
   credentials: true,
-  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
-  allowedHeaders: ['Content-Type','Authorization'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 204, // לחלק מהדפדפנים/פרוקסים עדיף 204 בפריפלייט
 };
 
-// Before any routes
 app.use(cors(corsOptions));
-app.use((req, res, next) => { res.setHeader('Vary', 'Origin'); next(); });
-// Explicit OPTIONS handling to return precise headers
-app.use((req, res, next) => {
-  if (req.method === 'OPTIONS') {
-    const origin = req.headers.origin as string | undefined;
-    const allowed = !origin || allowedOrigins.has(origin);
-    if (allowed && origin) {
-      res.setHeader('Access-Control-Allow-Origin', origin);
-    }
-    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'content-type, authorization');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Vary', 'Origin');
-    return res.status(204).end();
-  }
-  return next();
-});
+app.options('*', cors(corsOptions)); // תשובת פריפלייט אוטומטית
 
-// Serve API docs (Swagger UI) from docs/api at /docs
-app.use('/docs', express.static(path.resolve(__dirname, '../../docs/api')));
-// Serve standalone Admin UI at /admin
-app.use('/admin', express.static(path.resolve(__dirname, '../../docs/admin')));
+/** ===== JSON / לוגים / רייט-לימיט גלובלי ===== */
+app.use(express.json({ limit: '1mb' }));
+app.use(httpLogger);
+app.use(rateLimitLocal);
 
-// Boot-time config checks (non-fatal in dev; avoid fatal exit on Vercel)
 const IS_PROD = process.env.NODE_ENV === 'production';
 const DEV_AUTH_MODE = process.env.DEV_AUTH_MODE === 'true';
 const hasOpenAI = !!process.env.OPENAI_API_KEY;
 const hasAnthropic = !!process.env.ANTHROPIC_API_KEY;
 const IS_VERCEL = process.env.VERCEL === '1';
 
+if (IS_PROD) {
+  app.use(rateLimitProdGlobal);
+}
+
+/** ===== בדיקות קונפיג בזמן עלייה (לא פאטליים ב־Vercel) ===== */
 if (!hasOpenAI || !hasAnthropic) {
   const msg = 'LLM API keys missing: ' +
     `${!hasOpenAI ? 'OPENAI_API_KEY ' : ''}${!hasAnthropic ? 'ANTHROPIC_API_KEY' : ''}`.trim();
-  // On Vercel serverless, never call process.exit — it kills the function and causes hanging connections
-  // TODO: Using process.exit(1) in prod stops the server if keys are missing. Ensure fail-fast is desired and document this in ops/healthchecks.
+
+  // ב־Vercel לא קוראים ל-exit כדי לא לתקוע בקשות, בלוקציה אחרת אפשר לשקול fail-fast
   if (IS_PROD && !IS_VERCEL) {
     logger.error({ msg }, 'Fatal: required LLM keys are not configured in production');
     process.exit(1);
   }
-  // TODO: Running without full LLM keys triggers fallback behavior. Consider gating chat endpoints or emitting a metric to detect unintended fallback in non-prod.
   logger.warn({ msg }, 'Running without full LLM keys. Chat LLM will be disabled/fallback');
 }
 
@@ -97,39 +82,58 @@ if (DEV_AUTH_MODE) {
   logger.warn('DEV_AUTH_MODE is enabled: JWT enforcement may be relaxed for development');
 }
 
+/** ===== סטטיים (Docs/Admin) ===== */
+app.use('/docs', express.static(path.resolve(__dirname, '../../docs/api')));
+app.use('/admin', express.static(path.resolve(__dirname, '../../docs/admin')));
+
+/** ===== Health & Ping ===== */
 app.get('/health', (_req: Request, res: Response) => {
-  res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate')
-    .status(200).json({ status: 'ok', service: 'studyflow-server', version: '0.1.0' });
+  res
+    .set('Cache-Control', 'private, no-cache, no-store, must-revalidate')
+    .status(200)
+    .json({ status: 'ok', service: 'studyflow-server', version: '0.1.0' });
 });
 
-// Explicit API health route for Vercel /api prefix
-app.get('/api/health', cors(corsOptions), (req: Request, res: Response) => {
-  // TEMP DEBUG: inspect incoming Origin and allowlist env (remove after verification)
-  // eslint-disable-next-line no-console
-  console.log('CORS DEBUG', { origin: req.headers.origin, env: process.env.ALLOWED_ORIGINS });
-  res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate')
-    .status(200).json({ status: 'ok', service: 'studyflow-server', version: '0.1.0' });
+// מסלול health עם prefix /api עבור פריסות Vercel
+app.get('/api/health', cors(corsOptions), (_req: Request, res: Response) => {
+  // DEBUG זמני אם צריך:
+  // console.log('CORS DEBUG', { origin: _req.headers.origin, env: process.env.ALLOWED_ORIGINS });
+  res
+    .set('Cache-Control', 'private, no-cache, no-store, must-revalidate')
+    .status(200)
+    .json({ status: 'ok', service: 'studyflow-server', version: '0.1.0' });
 });
 
-// Minimal ping to test Express routing through /api/index.ts without DB
+// Ping מינימלי (לבדוק ראוטינג ללא DB)
 app.get('/api/ping', (_req: Request, res: Response) => {
-  res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate')
-    .status(200).json({ ok: true, ts: Date.now() });
+  res
+    .set('Cache-Control', 'private, no-cache, no-store, must-revalidate')
+    .status(200)
+    .json({ ok: true, ts: Date.now() });
 });
 
-// Public auth routes (register/login) must be before protected routes
-if (IS_PROD) {
-  app.use('/api/auth', rateLimitProdAuth);
-}
+// דיאגנוסטיקה להרשמה: מסלול קליל שאינו נוגע ב־DB
+app.post('/api/auth/register_ping', (_req: Request, res: Response) => {
+  res
+    .set('Cache-Control', 'private, no-cache, no-store, must-revalidate')
+    .status(200)
+    .json({ ok: true, ts: Date.now() });
+});
+
+/** ===== ראוטים ציבוריים /auth ===== */
+// ⚠️ בזמן דיבוג תקיעות ב־register – נשבית את ה־rate-limit על auth כדי לא לבודד גורם:
+/// if (IS_PROD) {
+///   app.use('/api/auth', rateLimitProdAuth);
+/// }
 app.use('/api/auth', authRouter);
 
-// Public health routes
+/** ===== ראוטי בריאות נוספים (אם יש) ===== */
 app.use('/api', healthRouter);
 
-// Enforce LLM presence for chat endpoints when configured
+/** ===== אכיפת LLM על /api/chat ===== */
 app.use('/api/chat', requireLLM);
 
-// Protected routes
+/** ===== ראוטים מוגנים ===== */
 app.use('/api', meRouter);
 app.use('/api', coursesRouter);
 app.use('/api', botsRouter);
@@ -140,8 +144,7 @@ app.use('/api', plannerRouter);
 app.use('/api', analyticsRouter);
 app.use('/api', usersRouter);
 
-// Centralized error handler must be last
+/** ===== error handler (חייב להיות אחרון) ===== */
 app.use(errorHandler);
 
-// Export the app for integration testing (Supertest)
 export { app };

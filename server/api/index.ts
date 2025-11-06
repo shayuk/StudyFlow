@@ -1,14 +1,18 @@
-import type { IncomingMessage, ServerResponse } from 'http';
-import { app } from '../src/index';
-import { ensureDefaultAdmin } from '../src/bootstrap/ensureDefaultAdmin';
+// api/index.ts
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { app } from '../server/src/index'; // ודאי שהנתיב הזה נכון לפי המבנה שלך
 
-let seeded = false;
+// הגדרת גרסת Node ל-Vercel כדי למנוע שגיאות Runtime
+export const config = {
+  runtime: 'nodejs18.x',
+};
 
-export default async function handler(req: IncomingMessage, res: ServerResponse) {
-  // One-time seeding on cold start (non-blocking)
-  if (!seeded) {
-    seeded = true;
-    ensureDefaultAdmin().catch(() => { /* suppress noisy cold start logs */ });
-  }
-  return (app as unknown as (req: IncomingMessage, res: ServerResponse) => void)(req, res);
+/**
+ * גשר בין מנגנון ה־Serverless Functions של Vercel לבין שרת ה־Express שלך.
+ * Express מטפל בכל הראוטים (auth, ping, health וכו’), והפונקציה הזו
+ * פשוט מעבירה את הבקשות ל־Express.
+ */
+export default function handler(req: VercelRequest, res: VercelResponse) {
+  // @ts-ignore — טיפוסי VercelRequest/VercelResponse לא תואמים לחלוטין ל־Express
+  return app(req, res);
 }

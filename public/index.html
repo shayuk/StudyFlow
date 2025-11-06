@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>StudyFlow – סוכן למידה חכם באוניברסיטת אריאל</title>
+  <meta name="description" content="StudyFlow – מערכת בינה מלאכותית ללמידה והוראה: עוזר לסטודנט, כלי יצירת משימות למרצים, דוחות אנליטיים, ונתיבי למידה מותאמים אישית." />
+  <meta property="og:title" content="StudyFlow – סוכן למידה חכם" />
+  <meta property="og:description" content="פיילוט פעיל באוניברסיטת אריאל: סטודנטים, מרצים והנהלה אקדמית – כולם מקבלים ערך מיידי." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://studyflow-b6265.web.app/" />
+  <meta property="og:image" content="https://studyflow-b6265.web.app/og-image.png" />
+  <link rel="icon" href="/favicon.ico" />
+  <style>
+    :root{
+      --bg:#0b0e14; --card:#121826; --muted:#8aa0b4; --text:#eaf2f9; --accent:#57d0ff; --accent2:#8affc1;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Inter,Heebo,Arial,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;}
+    a{color:var(--accent);text-decoration:none}
+    a:hover{opacity:.9}
+    header{max-width:1100px;margin:0 auto;padding:24px;display:flex;align-items:center;justify-content:space-between}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 6px 30px rgba(87,208,255,.25)}
+    .tagline{opacity:.8;font-size:14px}
+    .btn{display:inline-flex;align-items:center;gap:10px;padding:12px 18px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:#162033}
+    .btn:hover{transform:translateY(-1px)}
+    .hero{max-width:1100px;margin:24px auto 0;padding:0 24px 48px;display:grid;grid-template-columns:1.2fr .8fr;gap:28px}
+    .hero-card{background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:28px;box-shadow:0 10px 50px rgba(0,0,0,.25)}
+    .hero h1{margin:0 0 10px;font-size:38px;line-height:1.2}
+    .hero p{margin:0 0 18px;color:var(--muted);font-size:18px}
+    .highlights{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:18px}
+    .pill{border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:10px 14px;background:#0f1422;color:#cfe7ff;font-size:14px}
+    .side{display:flex;flex-direction:column;gap:16px}
+    .card{background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:18px}
+    .card h3{margin:0 0 8px;font-size:18px}
+    .list{margin:0;padding:0 18px;color:#cfe7ff}
+    .cta{display:flex;gap:12px;margin-top:18px;flex-wrap:wrap}
+    .primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#0b0e14;border:none}
+    .muted{background:#10182a}
+    .section{max-width:1100px;margin:24px auto 0;padding:0 24px 48px}
+    .section h2{margin:0 0 12px;font-size:26px}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+    .feature{background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px}
+    footer{max-width:1100px;margin:0 auto;padding:24px;color:var(--muted);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,.08)}
+    .en{opacity:.85;font-size:14px}
+    @media (max-width:980px){.hero{grid-template-columns:1fr}}
+    @media (max-width:720px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <strong>StudyFlow</strong>
+        <div class="tagline">סוכן למידה חכם – אוניברסיטת אריאל</div>
+      </div>
+    </div>
+    <nav class="cta">
+      <a class="btn" href="mailto:innovation-teaching@ariel.ac.il?subject=StudyFlow%20Demo">יצירת קשר</a>
+      <a class="btn" href="/docs.pdf">מסמך תיאור מוצר</a>
+    </nav>
+  </header>
+
+  <main class="hero">
+    <section class="hero-card">
+      <h1>פיילוט פעיל: AI שמחבר סטודנטים, מרצים והנהלה</h1>
+      <p>StudyFlow הוא עוזר למידה מבוסס בינה מלאכותית שמותאם במיוחד להשכלה הגבוהה בישראל: תמיכה חכמה לסטודנטים, כלים ליצירת מטלות ותוכן למרצים, ודשבורדים אנליטיים להנהלה.</p>
+      <div class="highlights">
+        <div class="pill">עוזר לסטודנט • Q&A מבוסס RAG</div>
+        <div class="pill">כלי יצירת משימות ותוכן למרצים</div>
+        <div class="pill">דוחות בזמן אמת • מדדים להוראה</div>
+        <div class="pill">התאמה אישית • נתיבי למידה</div>
+      </div>
+      <div class="cta">
+        <a class="btn primary" href="mailto:innovation-teaching@ariel.ac.il?subject=StudyFlow%20Pilot">בקשת הדגמה</a>
+        <a class="btn muted" href="https://studyflow-b6265.web.app/admin.html">כניסת צוות (פיילוט)</a>
+      </div>
+    </section>
+
+    <aside class="side">
+      <div class="card">
+        <h3>מי אנחנו</h3>
+        <p>פותח ברשות לחדשנות בהוראה, אוניברסיטת אריאל, בהובלת פרופ' ניצה דודוביץ, ודוקטור ברק קרן.</p>
+      </div>
+      <div class="card">
+        <h3>עיקרי יכולות</h3>
+        <ul class="list">
+          <li>סיוע מיידי לסטודנטים (שאלות על הקורס/חומר לימוד)</li>
+          <li>מחולל מטלות ותוכן למרצים (מבוסס לומדה/סילבוס)</li>
+          <li>ניתוח משובי הוראה ומדדי איכות</li>
+          <li>דשבורדים להנהלה – תובנות ולא רק מספרים</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>סטטוס</h3>
+        <p>פיילוט חי בקורסים נבחרים. הרחבה מדורגת לסמסטר הקרוב.</p>
+      </div>
+    </aside>
+  </main>
+
+  <section class="section">
+    <h2>למה StudyFlow</h2>
+    <div class="grid">
+      <div class="feature">
+        <strong>מותאם לאקדמיה</strong>
+        <p>כל התהליכים נבנו סביב הוראה באקדמיה בישראל: Moodle, SPSS, ניהול מטלות וסטנדרטים פדגוגיים.</p>
+      </div>
+      <div class="feature">
+        <strong>שקיפות ובטיחות</strong>
+        <p>ניהול הרשאות, אנונימיות מדודה, והגנות מפני דליפת פרומפטים. שליטה ארגונית מלאה.</p>
+      </div>
+      <div class="feature">
+        <strong>תובנות פעולה</strong>
+        <p>לא רק צ’אט – דוחות, אינדיקטורים ומסלולי שיפור שקל ליישם.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div>נבנה באהבה באוניברסיטת אריאל • © StudyFlow</div>
+    <div class="en">Credit: Built with ChatGPT assistance • Pilot by Teaching Innovation Authority</div>
+  </footer>
+</body>
+</html>
