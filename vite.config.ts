@@ -3,14 +3,16 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
 const dirname = typeof __dirname !== 'undefined' ? __dirname : path.dirname(fileURLToPath(import.meta.url));
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  // חשוב: בפיתוח נשאר '/', בבילד לפרודקשן נגיש תחת /app/
+  base: mode === 'production' ? '/app/' : '/',
+
   plugins: [react()],
 
   resolve: {
@@ -29,26 +31,25 @@ export default defineConfig({
     noExternal: ['lucide-react'],
   },
 
-  
-
   server: {
-    host: '127.0.0.1',
-    // כופה IPv4
+    host: '127.0.0.1', // כופה IPv4
     port: 5173,
     strictPort: true
   },
   preview: {
     host: '127.0.0.1' // כופה IPv4 גם ב-preview
   },
+
   test: {
     projects: [{
       extends: true,
       plugins: [
-      // The plugin will run tests for the stories defined in your Storybook config
-      // See options at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon#storybooktest
-      storybookTest({
-        configDir: path.join(dirname, '.storybook')
-      })],
+        // The plugin will run tests for the stories defined in your Storybook config
+        // See options at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon#storybooktest
+        storybookTest({
+          configDir: path.join(dirname, '.storybook')
+        })
+      ],
       test: {
         name: 'storybook',
         browser: {
@@ -63,4 +64,4 @@ export default defineConfig({
       }
     }]
   }
-});
+}));
