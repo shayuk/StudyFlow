@@ -1,11 +1,11 @@
 {
   "version": 2,
   "functions": {
-    "api/index.ts": { "runtime": "nodejs20.x" }
+    "api/**/*.ts": { "runtime": "nodejs20.x" }
   },
   "rewrites": [
     { "source": "/", "destination": "/api/health" },
-    { "source": "/api/(.*)", "destination": "/api/index" },
+    { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/docs/(.*)", "destination": "/api/index" }
   ]
 }
