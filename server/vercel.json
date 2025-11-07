@@ -1,9 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "",
-  "outputDirectory": ".",
   "rewrites": [
     { "source": "/", "destination": "/api/health" },
+    { "source": "/api/(.*)", "destination": "/api/index" },
     { "source": "/docs/(.*)", "destination": "/api/index" }
   ]
 }
