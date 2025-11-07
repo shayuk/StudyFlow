@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "pnpm build",
+  "buildCommand": "cd server && npx prisma generate && cd .. && pnpm build",
   "outputDirectory": "dist",
   "installCommand": "pnpm install",
   "functions": {
