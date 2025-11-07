@@ -1,23 +1,26 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import jwt from 'jsonwebtoken';
 
-let PrismaClient: any;
-try {
-  PrismaClient = require('@prisma/client').PrismaClient;
-} catch (e) {
-  console.error('Failed to load PrismaClient:', e);
-}
-
 export const config = {
   runtime: 'nodejs',
   maxDuration: 30
 };
 
-// Initialize Prisma
-const prisma = new PrismaClient({
-  log: ['error'],
-  errorFormat: 'minimal',
-});
+let prisma: any;
+try {
+  const { PrismaClient } = require('@prisma/client');
+  prisma = new PrismaClient({
+    log: ['error'],
+    errorFormat: 'minimal',
+  });
+} catch (e) {
+  console.error('Failed to initialize Prisma:', e);
+  // Create a dummy prisma object to prevent crashes
+  prisma = {
+    user: { findUnique: () => null, create: () => null },
+    org: { findFirst: () => null, create: () => null }
+  };
+}
 
 // JWT signing function
 function signToken(payload: { sub: string; orgId: string; roles: string[] }): string {
