@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "buildCommand": "pnpm install && cd server && pnpm exec prisma generate --schema=prisma/schema.prisma",
+  "buildCommand": "pnpm build",
   "outputDirectory": ".",
   "installCommand": "pnpm install",
   "functions": {
     "server/api/*.ts": {
       "runtime": "@vercel/node@3.2.0",
       "maxDuration": 30,
-      "includeFiles": "server/prisma/schema.prisma"
+      "includeFiles": "server/prisma/**"
     }
   },
   "rewrites": [
