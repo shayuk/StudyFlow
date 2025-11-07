@@ -1,6 +1,0 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { app } from '../server/src/index';
-export const config = { runtime: 'nodejs' } as const;
-export default function handler(req: VercelRequest, res: VercelResponse) {
-  return (app as unknown as (req: VercelRequest, res: VercelResponse) => void)(req, res);
-}
