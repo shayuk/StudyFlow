@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { PrismaClient } from '@prisma/client';
+const { PrismaClient } = require('@prisma/client');
 import jwt from 'jsonwebtoken';
 
 export const config = {
