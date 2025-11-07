@@ -2,7 +2,7 @@
   "version": 2,
   "buildCommand": "cd server && npm ci && npx prisma generate --schema=prisma/schema.prisma && npm run build",
   "outputDirectory": ".",
-  "installCommand": "npm install",
+  "installCommand": "cd server && npm install",
   "functions": {
     "server/api/*.ts": {
       "runtime": "@vercel/node@3.2.0",
