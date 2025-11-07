@@ -25,6 +25,9 @@ import requireLLM from './middleware/requireLLM';
 
 const app = express();
 
+// אבטחה קטנה: הסתרת כותרת X-Powered-By
+app.disable('x-powered-by');
+
 /** ===== CORS (לפני כל מידלוור אחר) ===== */
 const allowedOrigins = new Set(
   (process.env.ALLOWED_ORIGINS ?? '')
@@ -44,7 +47,7 @@ const corsOptions: cors.CorsOptions = {
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  optionsSuccessStatus: 204, // לחלק מהדפדפנים/פרוקסים עדיף 204 בפריפלייט
+  optionsSuccessStatus: 204,
 };
 
 app.use(cors(corsOptions));
@@ -70,7 +73,6 @@ if (!hasOpenAI || !hasAnthropic) {
   const msg = 'LLM API keys missing: ' +
     `${!hasOpenAI ? 'OPENAI_API_KEY ' : ''}${!hasAnthropic ? 'ANTHROPIC_API_KEY' : ''}`.trim();
 
-  // ב־Vercel לא קוראים ל-exit כדי לא לתקוע בקשות, בלוקציה אחרת אפשר לשקול fail-fast
   if (IS_PROD && !IS_VERCEL) {
     logger.error({ msg }, 'Fatal: required LLM keys are not configured in production');
     process.exit(1);
@@ -94,10 +96,7 @@ app.get('/health', (_req: Request, res: Response) => {
     .json({ status: 'ok', service: 'studyflow-server', version: '0.1.0' });
 });
 
-// מסלול health עם prefix /api עבור פריסות Vercel
-app.get('/api/health', cors(corsOptions), (_req: Request, res: Response) => {
-  // DEBUG זמני אם צריך:
-  // console.log('CORS DEBUG', { origin: _req.headers.origin, env: process.env.ALLOWED_ORIGINS });
+app.get('/api/health', (_req: Request, res: Response) => {
   res
     .set('Cache-Control', 'private, no-cache, no-store, must-revalidate')
     .status(200)
@@ -121,10 +120,10 @@ app.post('/api/auth/register_ping', (_req: Request, res: Response) => {
 });
 
 /** ===== ראוטים ציבוריים /auth ===== */
-// ⚠️ בזמן דיבוג תקיעות ב־register – נשבית את ה־rate-limit על auth כדי לא לבודד גורם:
-/// if (IS_PROD) {
-///   app.use('/api/auth', rateLimitProdAuth);
-/// }
+// ⚠️ בזמן דיבוג תקיעות ב־register – השהיית rate-limit על auth כדי לבודד גורם:
+// if (IS_PROD) {
+//   app.use('/api/auth', rateLimitProdAuth);
+// }
 app.use('/api/auth', authRouter);
 
 /** ===== ראוטי בריאות נוספים (אם יש) ===== */
