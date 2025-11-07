@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "pnpm install && pnpm -C server prisma generate --schema=prisma/schema.prisma && pnpm -C server build",
+  "buildCommand": "pnpm install && cd server && pnpm exec prisma generate --schema=prisma/schema.prisma",
   "outputDirectory": ".",
   "installCommand": "pnpm install",
   "functions": {
