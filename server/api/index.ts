@@ -3,6 +3,10 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { app } from '../src/index';  // נכון למבנה: server/api -> server/src
 
 // קיבוע ה־runtime עבור פונקציית ה־Vercel (יציב)
+export const config = {
+  runtime: 'nodejs',
+  maxDuration: 30
+};
 
 /**
  * גשר בין Serverless Functions של Vercel לבין אפליקציית ה-Express שלך.

@@ -1,5 +1,10 @@
 import type { IncomingMessage, ServerResponse } from 'http';
 
+export const config = {
+  runtime: 'nodejs',
+  maxDuration: 10
+};
+
 export default function handler(req: IncomingMessage, res: ServerResponse) {
   const origin = req.headers.origin as string | undefined;
   const allowlist = (process.env.ALLOWED_ORIGINS ?? '')

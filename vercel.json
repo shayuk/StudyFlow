@@ -1,0 +1,54 @@
+{
+  "version": 2,
+  "buildCommand": "cd server && npm ci && npx prisma generate --schema=prisma/schema.prisma && npm run build",
+  "outputDirectory": ".",
+  "installCommand": "npm install",
+  "functions": {
+    "server/api/*.ts": {
+      "runtime": "@vercel/node@3.2.0",
+      "maxDuration": 30,
+      "includeFiles": "server/prisma/schema.prisma"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/simple-test",
+      "destination": "/server/api/simple-test"
+    },
+    {
+      "source": "/api/test",
+      "destination": "/server/api/test"
+    },
+    {
+      "source": "/api/auth/register",
+      "destination": "/server/api/register"
+    },
+    {
+      "source": "/api/auth/login",
+      "destination": "/server/api/login"
+    },
+    {
+      "source": "/api/health",
+      "destination": "/server/api/health"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/server/api/index"
+    },
+    {
+      "source": "/api",
+      "destination": "/server/api/index"
+    },
+    {
+      "source": "/health",
+      "destination": "/server/api/health"
+    },
+    {
+      "source": "/",
+      "destination": "/index.html"
+    }
+  ],
+  "env": {
+    "VERCEL": "1"
+  }
+}
