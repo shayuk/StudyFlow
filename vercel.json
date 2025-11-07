@@ -1,22 +1,4 @@
 {
-  "version": 2,
   "buildCommand": "pnpm build",
-  "outputDirectory": "dist",
-  "installCommand": "pnpm install",
-  "functions": {
-    "api/**/*.ts": {
-      "runtime": "@vercel/node@3.2.0",
-      "maxDuration": 30,
-      "includeFiles": "server/prisma/**"
-    }
-  },
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/$1"
-    }
-  ],
-  "env": {
-    "VERCEL": "1"
-  }
+  "outputDirectory": "dist"
 }
