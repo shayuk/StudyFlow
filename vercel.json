@@ -20,6 +20,10 @@
       "destination": "/server/api/test"
     },
     {
+      "source": "/api/auth/test-register",
+      "destination": "/server/api/test-register"
+    },
+    {
       "source": "/api/auth/register",
       "destination": "/server/api/register"
     },

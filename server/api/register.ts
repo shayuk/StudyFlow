@@ -1,6 +1,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-const { PrismaClient } = require('@prisma/client');
 import jwt from 'jsonwebtoken';
+
+let PrismaClient: any;
+try {
+  PrismaClient = require('@prisma/client').PrismaClient;
+} catch (e) {
+  console.error('Failed to load PrismaClient:', e);
+}
 
 export const config = {
   runtime: 'nodejs',
