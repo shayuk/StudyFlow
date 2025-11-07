@@ -1,9 +1,9 @@
-# Ignore server source files (not needed for API routes)
-server/src
+# Keep server source files for build
+# server/src - NEEDED FOR BUILD
 server/tests
-server/*.ts
-server/*.js
-!server/prisma
+# server/*.ts - NEEDED FOR BUILD
+# server/*.js - NEEDED FOR BUILD
+# !server/prisma - NEEDED FOR BUILD
 
 # Development files
 .env.local

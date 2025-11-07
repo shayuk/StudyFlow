@@ -1,7 +1,7 @@
 {
   "version": 2,
   "framework": "vite",
-  "buildCommand": "pnpm install && pnpm build",
+  "buildCommand": "pnpm build:vercel",
   "outputDirectory": "dist",
   "installCommand": "pnpm install",
   "functions": {
