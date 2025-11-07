@@ -12,7 +12,9 @@ async function postAuth(
   payload: unknown,
   timeoutMs = DEFAULT_TIMEOUT
 ): Promise<RegisterResponse> {
-  const url = apiUrl(endpoint);
+  // For debugging - use the simple endpoint first
+  const actualEndpoint = endpoint === 'auth/register' ? 'auth/register-simple' : endpoint;
+  const url = apiUrl(actualEndpoint);
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(new DOMException('timeout', 'AbortError')), timeoutMs);
   const kind = endpoint.endsWith('login') ? 'login' : 'register';

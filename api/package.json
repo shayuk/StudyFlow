@@ -1,0 +1,10 @@
+{
+  "name": "studyflow-api",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@vercel/node": "^3.2.0",
+    "@prisma/client": "^6.15.0",
+    "jsonwebtoken": "^9.0.2"
+  }
+}
