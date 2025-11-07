@@ -46,3 +46,4 @@ server/prisma/migrations/
 server/prisma/migrations/**
 server/prisma/server/
 server/prisma/.env
+.vercel

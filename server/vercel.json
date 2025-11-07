@@ -8,4 +8,3 @@
     { "source": "/docs/(.*)", "destination": "/api/index" }
   ]
 }
-
