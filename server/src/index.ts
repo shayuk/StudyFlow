@@ -110,9 +110,23 @@ app.get('/api/ping', (_req: Request, res: Response) => {
     .status(200)
     .json({ ok: true, ts: Date.now() });
 });
+// Alias ללא קידומת /api לטובת מיפוי Vercel אפשרי
+app.get('/ping', (_req: Request, res: Response) => {
+  res
+    .set('Cache-Control', 'private, no-cache, no-store, must-revalidate')
+    .status(200)
+    .json({ ok: true, ts: Date.now() });
+});
 
 // דיאגנוסטיקה להרשמה: מסלול קליל שאינו נוגע ב־DB
 app.post('/api/auth/register_ping', (_req: Request, res: Response) => {
+  res
+    .set('Cache-Control', 'private, no-cache, no-store, must-revalidate')
+    .status(200)
+    .json({ ok: true, ts: Date.now() });
+});
+// Alias ללא קידומת /api
+app.post('/auth/register_ping', (_req: Request, res: Response) => {
   res
     .set('Cache-Control', 'private, no-cache, no-store, must-revalidate')
     .status(200)
