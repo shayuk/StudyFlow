@@ -1,7 +1,7 @@
 {
   "version": 2,
   "buildCommand": "pnpm build",
-  "outputDirectory": ".",
+  "outputDirectory": "dist",
   "installCommand": "pnpm install",
   "functions": {
     "server/api/*.ts": {
@@ -44,8 +44,8 @@
       "destination": "/server/api/health"
     },
     {
-      "source": "/",
-      "destination": "/index.html"
+      "source": "/(.*)",
+      "destination": "/$1"
     }
   ],
   "env": {

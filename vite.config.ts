@@ -9,9 +9,10 @@ import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
 const dirname = typeof __dirname !== 'undefined' ? __dirname : path.dirname(fileURLToPath(import.meta.url));
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default defineConfig(({ mode }) => ({
-  // חשוב: בפיתוח נשאר '/', בבילד לפרודקשן נגיש תחת /app/
-  base: mode === 'production' ? '/app/' : '/',
+  // Base path for the application
+  base: '/',
 
   plugins: [react()],
 
