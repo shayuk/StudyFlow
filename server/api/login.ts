@@ -72,10 +72,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Invalid email format' });
     }
 
-    // Find user
-    const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+    // Find user or auto-register if it's a new user
+    let user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+    
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      // Auto-register new users with passwordless login
+      const SINGLE_ORG_NAME = process.env.SINGLE_ORG_NAME || 'Ariel University';
+      let org = await prisma.org.findFirst({ where: { name: SINGLE_ORG_NAME } });
+      if (!org) {
+        org = await prisma.org.create({ data: { name: SINGLE_ORG_NAME } });
+      }
+      
+      // Determine role based on email
+      const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'krimishay68@gmail.com';
+      const role = normalizedEmail === ADMIN_EMAIL.toLowerCase() ? 'admin' : 'student';
+      
+      // Create user
+      user = await prisma.user.create({
+        data: {
+          orgId: org.id,
+          email: normalizedEmail,
+          name: null,
+          role: role
+        }
+      });
     }
 
     // Generate token

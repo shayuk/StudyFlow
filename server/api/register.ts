@@ -85,13 +85,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(409).json({ error: 'A user with this email already exists.' });
     }
 
+    // Determine role based on email
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'krimishay68@gmail.com';
+    const role = normalizedEmail === ADMIN_EMAIL.toLowerCase() ? 'admin' : 'student';
+    
     // Create user
     const user = await prisma.user.create({
       data: {
         orgId: org.id,
         email: normalizedEmail,
         name: name || null,
-        role: 'student'
+        role: role
       }
     });
 
