@@ -28,7 +28,7 @@ const app = express();
 app.disable('x-powered-by');
 
 /** ===== CORS (לפני כל מידלוור אחר) ===== */
-app.use((req, res, next) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
   const allowedOrigins = [
     'https://studyflow-b6265.web.app',
     'https://studyflow-ui.vercel.app',
