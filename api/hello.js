@@ -1,4 +1,4 @@
-module.exports = (req, res) => {
+export default function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', '*');
@@ -14,4 +14,4 @@ module.exports = (req, res) => {
     message: 'Hello from StudyFlow!',
     timestamp: new Date().toISOString()
   });
-};
+}
