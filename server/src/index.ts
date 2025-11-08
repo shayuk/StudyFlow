@@ -4,7 +4,6 @@ console.log(">>> NODE_ENV =", process.env.NODE_ENV);
 
 import express, { Request, Response, NextFunction } from 'express';
 import path from 'node:path';
-import cors from 'cors';
 
 import { httpLogger, logger } from './logger';
 import { rateLimitLocal, rateLimitProdGlobal, rateLimitProdAuth } from './middleware/rateLimit';
@@ -29,27 +28,27 @@ const app = express();
 app.disable('x-powered-by');
 
 /** ===== CORS (לפני כל מידלוור אחר) ===== */
-const allowedOrigins = new Set([
-  'https://studyflow-b6265.web.app',
-  ...(process.env.ALLOWED_ORIGINS ?? '').split(',').map(s => s.trim()).filter(Boolean)
-]);
+app.use((req, res, next) => {
+  const allowedOrigins = [
+    'https://studyflow-b6265.web.app',
+    'http://localhost:5173',
+  ];
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
 
-const corsOptions: cors.CorsOptions = {
-  origin(origin, cb) {
-    // מאפשר קריאות בלי Origin (curl/health)
-    if (!origin) return cb(null, true);
-    if (allowedOrigins.has(origin)) return cb(null, true);
-    console.warn('[CORS] blocked origin:', origin);
-    return cb(new Error('Not allowed by CORS: ' + origin));
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  optionsSuccessStatus: 204,
-};
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
 
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // תשובת פריפלייט אוטומטית
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+
+  next();
+});
 
 /** ===== JSON / לוגים / רייט-לימיט גלובלי ===== */
 app.use(express.json({ limit: '1mb' }));
