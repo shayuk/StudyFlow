@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>בדיקת חיבור StudyFlow</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        input {
+            padding: 8px;
+            margin: 10px 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 בדיקת חיבור StudyFlow</h1>
+    
+    <div class="test-section">
+        <h2>1. בדיקת Health של השרת</h2>
+        <button onclick="testServerHealth()">בדוק שרת</button>
+        <div id="server-status" class="status pending">ממתין לבדיקה...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. הרשמה/התחברות</h2>
+        <input type="email" id="email" placeholder="הכנס אימייל" value="test@example.com">
+        <br>
+        <button onclick="testRegister()">הרשם</button>
+        <button onclick="testLogin()">התחבר</button>
+        <div id="auth-status" class="status pending">ממתין להרשמה/התחברות...</div>
+        <div id="token-display"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. בדיקת API מאובטח</h2>
+        <button onclick="testMe()">בדוק /api/me</button>
+        <div id="me-status" class="status pending">ממתין לבדיקה...</div>
+        <pre id="me-data"></pre>
+    </div>
+
+    <div class="test-section">
+        <h2>4. פרטי חיבור</h2>
+        <p><strong>שרת:</strong> https://study-flow-server-one.vercel.app</p>
+        <p><strong>UI:</strong> https://studyflow-ui.vercel.app</p>
+        <p><strong>Token נשמר ב:</strong> localStorage.jwt</p>
+    </div>
+
+    <script>
+        const SERVER_URL = 'https://study-flow-server-one.vercel.app';
+        
+        async function testServerHealth() {
+            const status = document.getElementById('server-status');
+            status.className = 'status pending';
+            status.textContent = 'בודק...';
+            
+            try {
+                const response = await fetch(`${SERVER_URL}/health`);
+                const data = await response.json();
+                status.className = 'status success';
+                status.textContent = `✅ השרת פעיל: ${JSON.stringify(data)}`;
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = `❌ שגיאה: ${error.message}`;
+            }
+        }
+
+        async function testRegister() {
+            const email = document.getElementById('email').value;
+            const status = document.getElementById('auth-status');
+            status.className = 'status pending';
+            status.textContent = 'מתבצעת הרשמה...';
+            
+            try {
+                const response = await fetch(`${SERVER_URL}/api/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email }),
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || `HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                localStorage.setItem('jwt', data.token);
+                status.className = 'status success';
+                status.textContent = `✅ נרשמת בהצלחה! משתמש: ${data.user.email}`;
+                document.getElementById('token-display').innerHTML = `<strong>Token:</strong> ${data.token.substring(0, 50)}...`;
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = `❌ שגיאה: ${error.message}`;
+            }
+        }
+
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+            const status = document.getElementById('auth-status');
+            status.className = 'status pending';
+            status.textContent = 'מתבצעת התחברות...';
+            
+            try {
+                const response = await fetch(`${SERVER_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email }),
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || `HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                localStorage.setItem('jwt', data.token);
+                status.className = 'status success';
+                status.textContent = `✅ התחברת בהצלחה! משתמש: ${data.user.email}`;
+                document.getElementById('token-display').innerHTML = `<strong>Token:</strong> ${data.token.substring(0, 50)}...`;
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = `❌ שגיאה: ${error.message}`;
+            }
+        }
+
+        async function testMe() {
+            const status = document.getElementById('me-status');
+            const dataDisplay = document.getElementById('me-data');
+            status.className = 'status pending';
+            status.textContent = 'בודק...';
+            dataDisplay.textContent = '';
+            
+            const token = localStorage.getItem('jwt');
+            if (!token) {
+                status.className = 'status error';
+                status.textContent = '❌ אין Token - התחבר קודם';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${SERVER_URL}/api/me`, {
+                    headers: { 
+                        'Authorization': `Bearer ${token}`
+                    },
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || `HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                status.className = 'status success';
+                status.textContent = '✅ הצלחה!';
+                dataDisplay.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = `❌ שגיאה: ${error.message}`;
+            }
+        }
+
+        // בדיקה ראשונית
+        window.onload = () => {
+            testServerHealth();
+        };
+    </script>
+</body>
+</html>

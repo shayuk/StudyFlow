@@ -1,10 +1,22 @@
 const BASE = import.meta.env.VITE_API_BASE_URL || '';
 
+function getAuthHeaders(): HeadersInit {
+  const token = localStorage.getItem('jwt');
+  if (token) {
+    return { 'Authorization': `Bearer ${token}` };
+  }
+  return {};
+}
+
 export async function startConversation(botInstanceId?: string) {
+  const authHeaders = getAuthHeaders();
   const res = await fetch(`${BASE}/api/chat/start`, {
     method: 'POST',
     credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      ...authHeaders 
+    },
     body: JSON.stringify({ botInstanceId }),
   });
   if (!res.ok) throw new Error('failed_to_start');
@@ -16,12 +28,14 @@ export async function streamMessage(
   content: string,
   onToken: (t: string) => void
 ) {
+  const authHeaders = getAuthHeaders();
   const res = await fetch(`${BASE}/api/chat/${encodeURIComponent(conversationId)}/message?stream=1`, {
     method: 'POST',
     credentials: 'include',
     headers: {
       Accept: 'text/event-stream',
       'Content-Type': 'application/json',
+      ...authHeaders
     },
     body: JSON.stringify({ content }),
   });
