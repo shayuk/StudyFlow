@@ -1,6 +1,6 @@
 # Ignore entire server directory (this is frontend only)
 server/
-api/
+# Don't ignore api/ - we need it for serverless functions!
 
 # Development files
 .env.local
