@@ -1,7 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
+// Simple hello endpoint to test basic server functionality
 export default function handler(req: VercelRequest, res: VercelResponse) {
-  // Enable CORS for ALL origins
+  // Enable CORS for ALL origins (we'll restrict later)
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -13,9 +14,9 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   }
   
   return res.status(200).json({
-    status: 'healthy',
-    service: 'StudyFlow API',
-    environment: process.env.VERCEL_ENV || 'development',
-    timestamp: new Date().toISOString()
+    message: 'Hello from StudyFlow Server!',
+    timestamp: new Date().toISOString(),
+    method: req.method,
+    url: req.url
   });
 }

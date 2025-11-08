@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>בדיקת חיבור חדש - StudyFlow</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            border: 1px solid #dee2e6;
+        }
+        button {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .info {
+            background: #cfe2ff;
+            color: #084298;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .result {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 בדיקת חיבור חדש - StudyFlow</h1>
+        
+        <div class="test-section">
+            <h2>⚙️ הגדרות</h2>
+            <label>כתובת השרת:</label>
+            <input type="text" id="serverUrl" value="https://study-flow-server-one.vercel.app" />
+            <div class="info">ניתן לשנות את הכתובת לבדיקה מול שרת אחר</div>
+        </div>
+
+        <div class="test-section">
+            <h2>1. בדיקת Hello</h2>
+            <button onclick="testHello()">בדוק Hello</button>
+            <div id="helloResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>2. בדיקת Health</h2>
+            <button onclick="testHealth()">בדוק Health</button>
+            <div id="healthResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>3. בדיקת הרשמה</h2>
+            <input type="email" id="registerEmail" placeholder="הכנס אימייל" value="test@example.com" />
+            <button onclick="testRegister()">הרשם</button>
+            <div id="registerResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>4. בדיקת התחברות</h2>
+            <input type="email" id="loginEmail" placeholder="הכנס אימייל" value="test@example.com" />
+            <button onclick="testLogin()">התחבר</button>
+            <div id="loginResult"></div>
+        </div>
+    </div>
+
+    <script>
+        function getServerUrl() {
+            return document.getElementById('serverUrl').value.replace(/\/$/, '');
+        }
+
+        async function testHello() {
+            const resultDiv = document.getElementById('helloResult');
+            resultDiv.innerHTML = '<div class="info">שולח בקשה...</div>';
+            
+            try {
+                const response = await fetch(getServerUrl() + '/api/hello', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ הצליח!</div>
+                        <div class="result">${JSON.stringify(data, null, 2)}</div>
+                    `;
+                } else {
+                    throw new Error(JSON.stringify(data));
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">❌ שגיאה: ${error.message}</div>
+                `;
+            }
+        }
+
+        async function testHealth() {
+            const resultDiv = document.getElementById('healthResult');
+            resultDiv.innerHTML = '<div class="info">בודק מצב השרת...</div>';
+            
+            try {
+                const response = await fetch(getServerUrl() + '/api/health', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ השרת פעיל!</div>
+                        <div class="result">${JSON.stringify(data, null, 2)}</div>
+                    `;
+                } else {
+                    throw new Error(JSON.stringify(data));
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">❌ שגיאה: ${error.message}</div>
+                `;
+            }
+        }
+
+        async function testRegister() {
+            const resultDiv = document.getElementById('registerResult');
+            const email = document.getElementById('registerEmail').value;
+            
+            if (!email) {
+                resultDiv.innerHTML = '<div class="error">אנא הכנס אימייל</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="info">מבצע הרשמה...</div>';
+            
+            try {
+                const response = await fetch(getServerUrl() + '/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ email })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // שמור את הטוקן
+                    if (data.token) {
+                        localStorage.setItem('jwt', data.token);
+                    }
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ ההרשמה הצליחה!</div>
+                        <div class="result">${JSON.stringify(data, null, 2)}</div>
+                        ${data.token ? '<div class="info">הטוקן נשמר ב-localStorage</div>' : ''}
+                    `;
+                } else {
+                    throw new Error(JSON.stringify(data));
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">❌ שגיאה: ${error.message}</div>
+                `;
+            }
+        }
+
+        async function testLogin() {
+            const resultDiv = document.getElementById('loginResult');
+            const email = document.getElementById('loginEmail').value;
+            
+            if (!email) {
+                resultDiv.innerHTML = '<div class="error">אנא הכנס אימייל</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="info">מתחבר...</div>';
+            
+            try {
+                const response = await fetch(getServerUrl() + '/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ email })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // שמור את הטוקן
+                    if (data.token) {
+                        localStorage.setItem('jwt', data.token);
+                    }
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ ההתחברות הצליחה!</div>
+                        <div class="result">${JSON.stringify(data, null, 2)}</div>
+                        ${data.token ? '<div class="info">הטוקן נשמר ב-localStorage</div>' : ''}
+                    `;
+                } else {
+                    throw new Error(JSON.stringify(data));
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">❌ שגיאה: ${error.message}</div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

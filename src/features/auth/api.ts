@@ -1,4 +1,4 @@
-import { apiUrl } from '@/lib/api';
+// Using direct API URL instead of apiUrl helper
 
 export type RegisterResponse = {
   token: string;
@@ -12,24 +12,30 @@ async function postAuth(
   payload: unknown,
   timeoutMs = DEFAULT_TIMEOUT
 ): Promise<RegisterResponse> {
-  // Use the correct endpoint
-  const actualEndpoint = endpoint;
-  const url = apiUrl(actualEndpoint);
+  // Direct API call to Vercel serverless function
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+  const url = `${baseUrl}/api/${endpoint}`;
+  
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(new DOMException('timeout', 'AbortError')), timeoutMs);
   const kind = endpoint.endsWith('login') ? 'login' : 'register';
+  
   try {
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
       body: JSON.stringify(payload),
       signal: ctrl.signal,
     });
+    
     if (!res.ok) {
       const text = await res.text().catch(() => '');
       throw new Error(`${kind}_failed_${res.status}:${text}`);
     }
+    
     return res.json() as Promise<RegisterResponse>;
   } catch (e: any) {
     if (e?.name === 'AbortError') throw new Error(`${kind}_failed_timeout`);
