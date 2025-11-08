@@ -1,19 +1,17 @@
-export default function handler(req: any, res: any) {
+module.exports = (req, res) => {
   // Enable CORS for ALL origins
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
   
   // Handle preflight
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
   
-  return res.status(200).json({
-    status: 'healthy',
-    service: 'StudyFlow API',
-    environment: process.env.VERCEL_ENV || 'development',
-    timestamp: new Date().toISOString()
+  res.status(200).json({
+    message: 'Test endpoint working!',
+    timestamp: Date.now(),
+    method: req.method
   });
-}
+};
