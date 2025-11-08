@@ -1,9 +1,6 @@
-# Keep server source files for build
-# server/src - NEEDED FOR BUILD
-server/tests
-# server/*.ts - NEEDED FOR BUILD
-# server/*.js - NEEDED FOR BUILD
-# !server/prisma - NEEDED FOR BUILD
+# Ignore entire server directory (this is frontend only)
+server/
+api/
 
 # Development files
 .env.local
