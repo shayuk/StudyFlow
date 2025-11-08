@@ -33,9 +33,18 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
     'https://studyflow-b6265.web.app',
     'https://studyflow-ui.vercel.app',
     'http://localhost:5173',
+    'http://127.0.0.1:5173',
   ];
+  
   const origin = req.headers.origin;
-  if (origin && allowedOrigins.includes(origin)) {
+  
+  // Allow all Vercel preview deployments
+  const isVercelPreview = origin && (
+    origin.includes('.vercel.app') || 
+    origin.includes('vercel.app')
+  );
+  
+  if (origin && (allowedOrigins.includes(origin) || isVercelPreview)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   }
 
