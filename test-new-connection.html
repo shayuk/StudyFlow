@@ -99,7 +99,19 @@
         </div>
 
         <div class="test-section">
-            <h2>1. בדיקת Hello</h2>
+            <h2>1. בדיקת Ping (JS)</h2>
+            <button onclick="testPing()">בדוק Ping</button>
+            <div id="pingResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>2. בדיקת Test (JS)</h2>
+            <button onclick="testTest()">בדוק Test</button>
+            <div id="testResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>3. בדיקת Hello (TS)</h2>
             <button onclick="testHello()">בדוק Hello</button>
             <div id="helloResult"></div>
         </div>
@@ -128,6 +140,51 @@
     <script>
         function getServerUrl() {
             return document.getElementById('serverUrl').value.replace(/\/$/, '');
+        }
+
+        async function testPing() {
+            const resultDiv = document.getElementById('pingResult');
+            resultDiv.innerHTML = '<div class="info">שולח ping...</div>';
+            
+            try {
+                const response = await fetch(getServerUrl() + '/api/ping');
+                const text = await response.text();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ הצליח! קיבלתי: ${text}</div>
+                    `;
+                } else {
+                    throw new Error('Failed: ' + text);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">❌ שגיאה: ${error.message}</div>
+                `;
+            }
+        }
+
+        async function testTest() {
+            const resultDiv = document.getElementById('testResult');
+            resultDiv.innerHTML = '<div class="info">בודק endpoint test...</div>';
+            
+            try {
+                const response = await fetch(getServerUrl() + '/api/test');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ הצליח!</div>
+                        <div class="result">${JSON.stringify(data, null, 2)}</div>
+                    `;
+                } else {
+                    throw new Error(JSON.stringify(data));
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">❌ שגיאה: ${error.message}</div>
+                `;
+            }
         }
 
         async function testHello() {
