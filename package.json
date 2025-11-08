@@ -8,8 +8,8 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "build:vercel": "vite build",
+    "build": "vite build && pnpm-copy-api",
+    "build:vercel": "vite build && pnpm-copy-api",
     "lint": "eslint .",
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
@@ -24,7 +24,8 @@
     "backend:lint": "eslint server",
     "e2e": "playwright test",
     "e2e:smoke": "playwright test e2e/smoke.spec.ts",
-    "e2e:report": "playwright show-report"
+    "e2e:report": "playwright show-report",
+    "pnpm-copy-api": "node -e \"require('fs-extra').copySync('api', 'dist/api')\""
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.11",
@@ -41,6 +42,7 @@
     "@types/uuid": "^10.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "fs-extra": "^11.2.0",
     "framer-motion": "^12.23.12",
     "i18next": "^25.3.4",
     "lucide-react": "0.538.0",
