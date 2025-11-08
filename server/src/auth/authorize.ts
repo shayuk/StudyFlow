@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import express from 'express';
 import type { JwtUser, Role } from './jwt';
 
 export interface AuthedRequest extends Request {

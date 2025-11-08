@@ -1,4 +1,5 @@
 import { Router, Response } from 'express';
+import express from 'express';
 import { authMiddleware } from '../auth/middleware';
 import type { AuthedRequest as AuthReq } from '../auth/middleware';
 import { requireOrg, requireAnyRole } from '../auth/authorize';

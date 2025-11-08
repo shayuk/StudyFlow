@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import express from 'express';
 import { JWT_AUDIENCE, JWT_ISSUER } from '../config';
 
 const router = Router();

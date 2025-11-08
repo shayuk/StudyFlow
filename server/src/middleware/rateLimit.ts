@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
+import express from 'express';
 
 // Very simple in-memory per-IP rate limit for local/test only
 // Defaults: 60 requests / 60s per IP

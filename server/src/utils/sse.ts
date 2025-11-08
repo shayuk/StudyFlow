@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import express from 'express';
 
 export function openSSE(req: Request, res: Response) {
   res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');

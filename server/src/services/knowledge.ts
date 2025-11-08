@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import pdfParse from 'pdf-parse';
 import { prisma } from '../db';
+import { Prisma } from '@prisma/client/edge';
 import { embedText } from './embeddings';
 import { ensureCollection, upsertChunks, search as qdrantSearch, buildOrgFilter } from './qdrant';
 

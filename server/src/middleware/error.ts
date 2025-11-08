@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
+import express from 'express';
 import { logger } from '../logger';
 
 // RFC 7807 Problem Details response shape

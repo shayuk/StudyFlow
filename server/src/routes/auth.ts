@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import express from 'express';
 import { prisma } from '../db';
 import { signToken, type Role } from '../auth/jwt';
 import { SINGLE_ORG_NAME } from '../config';

@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client/edge';
 
 // Singleton Prisma Client to avoid multiple instances in dev with ts-node-dev
 const globalForPrisma = global as unknown as { prisma?: PrismaClient };

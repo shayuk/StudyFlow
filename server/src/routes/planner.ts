@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import express from 'express';
 import { authMiddleware } from '../auth/middleware';
 import { requireAnyRole, requireOrg } from '../auth/authorize';
 import { prisma } from '../db';

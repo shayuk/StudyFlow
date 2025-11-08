@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
+import express from 'express';
 
 const IN_PROD = process.env.NODE_ENV === 'production';
 
