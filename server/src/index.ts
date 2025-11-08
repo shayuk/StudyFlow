@@ -31,6 +31,7 @@ app.disable('x-powered-by');
 app.use((req, res, next) => {
   const allowedOrigins = [
     'https://studyflow-b6265.web.app',
+    'https://studyflow-ui.vercel.app',
     'http://localhost:5173',
   ];
   const origin = req.headers.origin;
