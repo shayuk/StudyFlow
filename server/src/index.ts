@@ -2,7 +2,7 @@
 import 'dotenv/config';
 console.log(">>> NODE_ENV =", process.env.NODE_ENV);
 
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import path from 'node:path';
 import cors from 'cors';
 
@@ -29,12 +29,10 @@ const app = express();
 app.disable('x-powered-by');
 
 /** ===== CORS (לפני כל מידלוור אחר) ===== */
-const allowedOrigins = new Set(
-  (process.env.ALLOWED_ORIGINS ?? '')
-    .split(',')
-    .map(s => s.trim())
-    .filter(Boolean)
-);
+const allowedOrigins = new Set([
+  'https://studyflow-b6265.web.app',
+  ...(process.env.ALLOWED_ORIGINS ?? '').split(',').map(s => s.trim()).filter(Boolean)
+]);
 
 const corsOptions: cors.CorsOptions = {
   origin(origin, cb) {
