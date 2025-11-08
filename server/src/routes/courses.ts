@@ -54,11 +54,11 @@ router.get('/courses/my', authMiddleware, requireOrg(), async (req: AuthedReques
   }));
 
   // Headers
-  res.set('Cache-Control', 'private, no-store');
-  res.set('Vary', 'Authorization');
-  res.set('X-Page', String(page));
-  res.set('X-PageSize', String(pageSize));
-  res.set('X-Has-More', String(hasMore));
+  res.setHeader('Cache-Control', 'private, no-store');
+  res.setHeader('Vary', 'Authorization');
+  res.setHeader('X-Page', String(page));
+  res.setHeader('X-PageSize', String(pageSize));
+  res.setHeader('X-Has-More', String(hasMore));
 
   // Weak ETag aware of user/org/roles/page/size/payload
   const etagInput = JSON.stringify({ u: userId, o: orgId, r: roleMask, p: page, s: pageSize, d: payload });
@@ -66,7 +66,7 @@ router.get('/courses/my', authMiddleware, requireOrg(), async (req: AuthedReques
   if (req.headers['if-none-match'] === weak) {
     return res.status(304).end();
   }
-  res.set('ETag', weak);
+  res.setHeader('ETag', weak);
 
   return res.status(200).json(payload);
 });

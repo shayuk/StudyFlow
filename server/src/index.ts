@@ -88,47 +88,35 @@ app.use('/admin', express.static(path.resolve(__dirname, '../../docs/admin')));
 
 /** ===== Health & Ping ===== */
 app.get('/health', (_req: Request, res: Response) => {
-  res
-    .set('Cache-Control', 'private, no-cache, no-store, must-revalidate')
-    .status(200)
-    .json({ status: 'ok', service: 'studyflow-server', version: '0.1.0' });
+  res.setHeader('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+  res.status(200).json({ status: 'ok', service: 'studyflow-server', version: '0.1.0' });
 });
 
 app.get('/api/health', (_req: Request, res: Response) => {
-  res
-    .set('Cache-Control', 'private, no-cache, no-store, must-revalidate')
-    .status(200)
-    .json({ status: 'ok', service: 'studyflow-server', version: '0.1.0' });
+  res.setHeader('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+  res.status(200).json({ status: 'ok', service: 'studyflow-server', version: '0.1.0' });
 });
 
 // Ping מינימלי (לבדוק ראוטינג ללא DB)
 app.get('/api/ping', (_req: Request, res: Response) => {
-  res
-    .set('Cache-Control', 'private, no-cache, no-store, must-revalidate')
-    .status(200)
-    .json({ ok: true, ts: Date.now() });
+  res.setHeader('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+  res.status(200).json({ ok: true, ts: Date.now() });
 });
 // Alias ללא קידומת /api לטובת מיפוי Vercel אפשרי
 app.get('/ping', (_req: Request, res: Response) => {
-  res
-    .set('Cache-Control', 'private, no-cache, no-store, must-revalidate')
-    .status(200)
-    .json({ ok: true, ts: Date.now() });
+  res.setHeader('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+  res.status(200).json({ ok: true, ts: Date.now() });
 });
 
 // דיאגנוסטיקה להרשמה: מסלול קליל שאינו נוגע ב־DB
 app.post('/api/auth/register_ping', (_req: Request, res: Response) => {
-  res
-    .set('Cache-Control', 'private, no-cache, no-store, must-revalidate')
-    .status(200)
-    .json({ ok: true, ts: Date.now() });
+  res.setHeader('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+  res.status(200).json({ ok: true, ts: Date.now() });
 });
 // Alias ללא קידומת /api
 app.post('/auth/register_ping', (_req: Request, res: Response) => {
-  res
-    .set('Cache-Control', 'private, no-cache, no-store, must-revalidate')
-    .status(200)
-    .json({ ok: true, ts: Date.now() });
+  res.setHeader('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+  res.status(200).json({ ok: true, ts: Date.now() });
 });
 
 /** ===== ראוטים ציבוריים /auth ===== */
