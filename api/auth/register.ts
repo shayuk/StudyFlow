@@ -43,9 +43,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // Set CORS headers
   const origin = req.headers.origin as string | undefined;
-  const allowedOrigins = ['https://studyflow-b6265.web.app', ...(process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean)];
-  
-  if (origin && allowedOrigins.includes(origin)) {
+  const allowedOrigins = (
+    process.env.ALLOWED_ORIGINS || 'https://studyflow-b6265.web.app'
+  ).split(',').map(s => s.trim()).filter(Boolean);
+
+  // Dynamically allow all Vercel preview domains
+  if (origin && (allowedOrigins.includes(origin) || new URL(origin).hostname.endsWith('.vercel.app'))) {
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Access-Control-Allow-Credentials', 'true');
   }
