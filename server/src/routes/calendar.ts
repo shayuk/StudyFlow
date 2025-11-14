@@ -119,6 +119,52 @@ router.get(
   }
 );
 
+router.get(
+  '/schedule/my',
+  authMiddleware,
+  requireOrg(),
+  requireAnyRole(['student', 'instructor', 'admin']),
+  async (req: AuthedRequest, res: Response) => {
+    const orgId = req.user!.orgId;
+    const userId = req.user!.sub;
+    const { start, end } = req.query as { start?: string; end?: string };
+
+    const startDate = start ? new Date(start) : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const endDate = end ? new Date(end) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+    if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime()) || startDate >= endDate) {
+      return res.status(400).json({ error: 'invalid_range' });
+    }
+
+    const enrollments = await prisma.enrollment.findMany({
+      where: { userId, course: { orgId } },
+      select: { courseId: true },
+    });
+    if (!enrollments.length) {
+      return res.status(200).json([]);
+    }
+
+    const courseIds = Array.from(new Set(enrollments.map(e => e.courseId)));
+    const events = await prisma.calendarEvent.findMany({
+      where: {
+        courseId: { in: courseIds },
+        startAt: { lt: endDate },
+        endAt: { gt: startDate },
+      },
+      orderBy: { startAt: 'asc' },
+    });
+
+    const payload = events.map(ev => ({
+      id: ev.id,
+      title: ev.title,
+      start: ev.startAt.toISOString(),
+      end: ev.endAt.toISOString(),
+      allDay: false,
+    }));
+    return res.status(200).json(payload);
+  }
+);
+
 export default router;
 
 // GET /api/calendar/freebusy?from=...&to=...

@@ -4,7 +4,36 @@ import { authMiddleware, AuthedRequest } from '../auth/middleware';
 import { requireOrg } from '../auth/authorize';
 import { prisma } from '../db';
 
+type TopicStatus = 'חזק' | 'ממוצע' | 'דורש חיזוק';
+type TopicSummary = { label: string; status: TopicStatus };
+
 const router = Router();
+
+router.get(
+  '/analytics/topics',
+  authMiddleware,
+  requireOrg(),
+  async (req: AuthedRequest, res: Response) => {
+    const orgId = req.user!.orgId;
+    const userId = req.user!.sub;
+
+    const snapshots = await prisma.masterySnapshot.findMany({
+      where: { orgId, userId },
+      orderBy: { updatedAt: 'desc' },
+      take: 100,
+    });
+
+    const seen = new Set<string>();
+    const summary: TopicSummary[] = [];
+    for (const snap of snapshots) {
+      if (!snap.topic || seen.has(snap.topic)) continue;
+      seen.add(snap.topic);
+      summary.push({ label: snap.topic, status: toStatus(snap.score) });
+    }
+
+    return res.status(200).json(summary);
+  }
+);
 
 // GET /api/analytics/course/:courseId
 // Returns minimal aggregates for a course within caller's org
@@ -50,5 +79,11 @@ router.get(
     });
   }
 );
+
+function toStatus(score: number): TopicStatus {
+  if (score >= 80) return 'חזק';
+  if (score >= 50) return 'ממוצע';
+  return 'דורש חיזוק';
+}
 
 export default router;

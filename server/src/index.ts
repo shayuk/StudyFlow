@@ -20,6 +20,7 @@ import analyticsRouter from './routes/analytics';
 import usersRouter from './routes/users';
 import authRouter from './routes/auth';
 import healthRouter from './routes/health';
+import calendarRouter from './routes/calendar';
 import requireLLM from './middleware/requireLLM';
 
 const app = express();
@@ -149,6 +150,7 @@ app.use('/api', chatRouter);
 app.use('/api', progressRouter);
 app.use('/api', knowledgeRouter);
 app.use('/api', plannerRouter);
+app.use('/api', calendarRouter);
 app.use('/api', analyticsRouter);
 app.use('/api', usersRouter);
 
