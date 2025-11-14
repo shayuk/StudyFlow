@@ -28,36 +28,35 @@ const app = express();
 // אבטחה קטנה: הסתרת כותרת X-Powered-By
 app.disable('x-powered-by');
 
-/** ===== CORS (לפני כל מידלוור אחר) ===== */
+/** ===== CORS (before all other middleware) ===== */
+const IS_PROD = process.env.NODE_ENV === 'production';
+
 app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const origin = req.headers.origin;
+
   const allowedOrigins = [
     'https://studyflow-b6265.web.app',
     'https://studyflow-ui.vercel.app',
+    'https://study-flow-web-one.vercel.app',
     'http://localhost:5173',
     'http://127.0.0.1:5173',
   ];
-  
-  const origin = req.headers.origin;
-  
-  // Allow all Vercel preview deployments
-  const isVercelPreview = origin && (
-    origin.includes('.vercel.app') || 
-    origin.includes('vercel.app')
-  );
-  
-  if (origin && (allowedOrigins.includes(origin) || isVercelPreview)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
+
+  const isVercelPreview = origin && origin.includes('.vercel.app');
+
+  if (!IS_PROD) {
+    if (origin) res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    if (origin && (allowedOrigins.includes(origin) || isVercelPreview)) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+    }
   }
 
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
 
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    return res.status(204).end();
-  }
-
+  if (req.method === 'OPTIONS') return res.status(204).end();
   next();
 });
 
@@ -66,7 +65,6 @@ app.use(express.json({ limit: '1mb' }));
 app.use(httpLogger);
 app.use(rateLimitLocal);
 
-const IS_PROD = process.env.NODE_ENV === 'production';
 const DEV_AUTH_MODE = process.env.DEV_AUTH_MODE === 'true';
 const hasOpenAI = !!process.env.OPENAI_API_KEY;
 const hasAnthropic = !!process.env.ANTHROPIC_API_KEY;
