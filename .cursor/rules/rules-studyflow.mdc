@@ -1,0 +1,24 @@
+---
+alwaysApply: true
+---
+1.	Do not modify the folder structure under apps/web, server, or packages unless explicitly instructed.
+2.	Do not move logic between client, server, or shared packages unless the request explicitly specifies relocation.
+3.	Always maintain compatibility with:
+o	Firebase Auth (client)
+o	Firestore access rules
+o	Vercel deployment for apps/web
+o	Render deployment for server
+o	MCP protocol
+o	Prisma schema and migrations
+4.	Do not modify schema.prisma without explicitly requested instructions.
+5.	Do not modify API routes without validating:
+o	Authentication requirements
+o	Organization scope (orgId)
+o	Data ownership rules
+6.	Never generate new Firebase functions unless asked.
+7.	Never introduce new npm dependencies without explicit instruction.
+8.	When editing React components, preserve RTL logic and existing UI patterns.
+9.	When editing server logic, maintain SSE streaming compatibility.
+10.	Ensure TypeScript types remain synchronized across packages.
+11.	When creating new components, place them in the correct domain folder (UI / core / features).
+12.	All generated code must support long-term maintainability for a monorepo environment.
