@@ -11,3 +11,12 @@ Remediation steps:
 - vercel.json (repo root)
   Reason: Vercel project Root Directory will be set to server/, so only server/vercel.json is used. Keeping a second vercel.json at repo root is confusing and unused.
   Timing: After confirming Vercel Root Directory is server/ and a successful Production deploy, remove the root vercel.json.
+
+- api/auth/**
+  Reason: Legacy mock serverless auth handlers that set permissive CORS headers and bypass the new Express backend. Keeping them causes Vercel to auto-detect obsolete functions and breaks production auth (CORS failures). Replace with the single catch-all proxy in api/[...path].ts.
+
+- api/health.ts, api/health.js, api/hello.ts, api/hello.js, api/index.ts, api/ping.js, api/test*.{js,ts}, api/working.ts, api/student/chat.ts
+  Reason: Early experimentation files that are no longer routed or maintained. When present, Vercel attempts to deploy them as separate functions, reintroducing “expected dist” loops and preventing the Express server from serving /api. Remove to keep only api/[...path].ts.
+
+- server/api/**
+  Reason: Duplicate of the legacy root-level serverless functions. They are unused after migrating to the standalone server under server/src. Leaving them around confuses contributors and causes Vercel to mis-detect the project.
