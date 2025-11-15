@@ -12,3 +12,9 @@ e2e
 *.spec.ts
 *.test.ts
 
+# Legacy serverless folders (use standalone server instead)
+api
+api/**
+server/api
+server/api/**
+
