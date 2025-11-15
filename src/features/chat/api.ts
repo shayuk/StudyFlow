@@ -1,4 +1,4 @@
-const BASE = import.meta.env.VITE_API_BASE_URL || '';
+import { API_BASE } from '@/lib/api';
 
 function getAuthHeaders(): HeadersInit {
   const token = localStorage.getItem('jwt');
@@ -10,7 +10,7 @@ function getAuthHeaders(): HeadersInit {
 
 export async function startConversation(botInstanceId?: string) {
   const authHeaders = getAuthHeaders();
-  const res = await fetch(`${BASE}/api/chat/start`, {
+  const res = await fetch(`${API_BASE}/chat/start`, {
     method: 'POST',
     credentials: 'include',
     headers: { 
@@ -29,7 +29,7 @@ export async function streamMessage(
   onToken: (t: string) => void
 ) {
   const authHeaders = getAuthHeaders();
-  const res = await fetch(`${BASE}/api/chat/${encodeURIComponent(conversationId)}/message?stream=1`, {
+  const res = await fetch(`${API_BASE}/chat/${encodeURIComponent(conversationId)}/message?stream=1`, {
     method: 'POST',
     credentials: 'include',
     headers: {

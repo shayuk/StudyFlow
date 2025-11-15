@@ -1,14 +1,8 @@
 {
-  "version": 2,
-  "framework": null,
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "source": "/api/:path*",
+      "destination": "https://study-flow-server-one.vercel.app/api/:path*"
     }
   ]
 }

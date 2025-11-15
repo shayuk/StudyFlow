@@ -1,7 +1,10 @@
-export const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '');
+const envBase = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim() ?? '';
+const fallbackBase = '/api';
+export const API_BASE = (envBase || fallbackBase).replace(/\/+$/, '') || fallbackBase;
 
 export function apiUrl(path: string) {
-  return `${API_BASE}/api/${String(path || '').replace(/^\/+/, '')}`;
+  const cleanPath = String(path || '').replace(/^\/+/, '');
+  return `${API_BASE}/${cleanPath}`;
 }
 
 function getAuthHeaders(): Record<string, string> {
@@ -10,7 +13,7 @@ function getAuthHeaders(): Record<string, string> {
   return { Authorization: `Bearer ${token}` };
 }
 
-function withDefaults(path: string, init?: RequestInit): RequestInit {
+function withDefaults(init?: RequestInit): RequestInit {
   const method = (init?.method ?? 'GET').toUpperCase();
   const headers = new Headers(init?.headers ?? undefined);
 
@@ -30,7 +33,7 @@ function withDefaults(path: string, init?: RequestInit): RequestInit {
 }
 
 export function apiFetch(path: string, init?: RequestInit) {
-  return fetch(apiUrl(path), withDefaults(path, init));
+  return fetch(apiUrl(path), withDefaults(init));
 }
 
 export async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {

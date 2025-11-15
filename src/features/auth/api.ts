@@ -1,4 +1,4 @@
-// Using direct API URL instead of apiUrl helper
+import { API_BASE } from '@/lib/api';
 
 export type RegisterResponse = {
   token: string;
@@ -12,9 +12,7 @@ async function postAuth(
   payload: unknown,
   timeoutMs = DEFAULT_TIMEOUT
 ): Promise<RegisterResponse> {
-  // Direct API call to Vercel serverless function
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
-  const url = `${baseUrl}/api/${endpoint}`;
+  const url = `${API_BASE}/${endpoint}`;
   
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(new DOMException('timeout', 'AbortError')), timeoutMs);
