@@ -13,9 +13,4 @@ e2e
 *.test.ts
 
 # Legacy serverless folders (use standalone server instead)
-# Keep catch-all proxy at api/[...path].ts (negate below)
-api/*
-!api/[...path].ts
-server/api
-server/api/**
-
+# (No longer needed after removing the old files)
