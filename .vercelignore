@@ -13,9 +13,12 @@ e2e
 *.test.ts
 
 # Legacy serverless folders (use standalone server instead)
-# Keep catch-all proxy at api/[...path].ts by un-ignoring explicitly
-api/**
-!api/[...path].ts
+# Keep catch-all proxy at api/[...path].ts by narrowing ignores
+api/
+api/auth
+api/student
+api/test*
+api/working.*
 server/api
 server/api/**
 
